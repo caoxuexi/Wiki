@@ -4,10 +4,14 @@ server:
 spring:
   datasource:
     password: 123456
-    username: root
+    username: wikiUser
     url: jdbc:mysql://localhost:3306/cooperate-editor?serverTimezone=Asia/Shanghai&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
     host: 192.168.20.129
     port: 6379
     database: 1
     password: redis
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml

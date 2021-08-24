@@ -1,7 +1,8 @@
-package com.caostudy;
+package com.caostudy.wiki;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.core.env.Environment;
@@ -14,6 +15,8 @@ import org.springframework.core.env.Environment;
  */
 @SpringBootApplication
 public class WikiApplication {
+    @Value("${server.port:8080}")
+    private String port;
     private static final Logger LOG= LoggerFactory.getLogger(WikiApplication.class);
 
     public static void main(String[] args) {
