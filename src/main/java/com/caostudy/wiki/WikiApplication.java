@@ -1,5 +1,7 @@
 package com.caostudy.wiki;
 
+import org.mybatis.spring.annotation.MapperScan;
+import org.mybatis.spring.annotation.MapperScans;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +16,7 @@ import org.springframework.core.env.Environment;
  * @date 2021/8/24 12:40
  */
 @SpringBootApplication
+@MapperScan(value = "com.caostudy.wiki.mapper")
 public class WikiApplication {
     @Value("${server.port:8080}")
     private String port;
