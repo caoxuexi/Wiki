@@ -7,11 +7,15 @@ import com.caostudy.wiki.mapper.EbookMapper;
 import com.caostudy.wiki.resp.EbookQueryResp;
 import com.caostudy.wiki.service.EbookService;
 import com.caostudy.wiki.utils.CopyUtil;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.util.List;
 
 /**
@@ -26,18 +30,15 @@ public class EbookServiceImpl implements EbookService {
 
     @Override
     public List<EbookQueryResp> list(EbookQueryReq req) {
-        EbookExample ebookExample=new EbookExample();
-        EbookExample.Criteria criteria=ebookExample.createCriteria();
-        criteria.andNameLike("%"+req.getName()+"%");
+        EbookExample ebookExample = new EbookExample();
+        EbookExample.Criteria criteria = ebookExample.createCriteria();
+        if (!StringUtils.isEmpty(req.getName())) {
+            criteria.andNameLike("%" + req.getName() + "%");
+        }
         List<Ebook> ebookList = ebookMapper.selectByExample(ebookExample);
-//        List<EbookQueryResp> respList=new ArrayList<>();
-//        for(Ebook ebook: ebookList){
-//            EbookQueryResp ebookQueryResp=new EbookQueryResp();
-//            ebookQueryResp.setId(ebook.getId());
-//            BeanUtils.copyProperties(ebook,ebookQueryResp);
-//            respList.add(ebookQueryResp);
-//        }
         List<EbookQueryResp> respList = CopyUtil.copyList(ebookList, EbookQueryResp.class);
         return respList;
     }
 }
+
+

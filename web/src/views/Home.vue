@@ -66,7 +66,7 @@
             </template>
             <a-list-item-meta :description="item.description">
               <template #title>
-                <a :href="item.href">{{ item.title }}</a>
+                <a :href="item.href">{{ item.name }}</a>
               </template>
               <template #avatar>
                 <a-avatar :src="item.cover"/>
@@ -87,7 +87,7 @@ const pagination = {
   onChange: page => {
     console.log(page);
   },
-  pageSize: 3, //一页显示三个
+  pageSize: 12, //一页显示九个
 };
 
 export default {
@@ -99,7 +99,7 @@ export default {
   },
 
   mounted() {
-    axios.get("http://localhost:8091/ebook/list?name=Spring").then((response) => {
+    axios.get("/ebook/list").then((response) => {
       console.log(response)
       this.ebooks = response.data.content
     })
@@ -121,8 +121,19 @@ export default {
         },
       ],
       pagination: pagination,
-      ebooks:""
+      ebooks: ""
     }
   }
 }
 </script>
+
+
+<style scoped>
+.ant-avatar {
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  border-radius: 8%;
+  margin: 5px 0;
+}
+</style>
