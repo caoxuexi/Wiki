@@ -49,7 +49,7 @@
         :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
     >
       <a-list item-layout="vertical" size="large" :grid="{gutter:20,column:3}"
-              :pagination="pagination" :data-source="ebooks">
+              :data-source="ebooks">
         <template #footer>
           <div>
             <b>ant design vue</b>
@@ -83,13 +83,6 @@
 import axios from 'axios'
 import {StarOutlined, LikeOutlined, MessageOutlined} from '@ant-design/icons-vue';
 
-const pagination = {
-  onChange: page => {
-    console.log(page);
-  },
-  pageSize: 12, //一页显示九个
-};
-
 export default {
   name: 'Home',
   components: {
@@ -99,9 +92,14 @@ export default {
   },
 
   mounted() {
-    axios.get("/ebook/list").then((response) => {
-      console.log(response)
-      this.ebooks = response.data.content
+    axios.get("/ebook/list",{
+      params:{
+        page:1,
+        size:1000
+      }
+    }).then((response) => {
+      const data=response.data;
+      this.ebooks = data.content.list
     })
   },
   data() {
@@ -120,7 +118,6 @@ export default {
           text: '2',
         },
       ],
-      pagination: pagination,
       ebooks: ""
     }
   }
