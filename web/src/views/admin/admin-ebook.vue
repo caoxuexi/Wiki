@@ -32,6 +32,8 @@
 
 <script>
 import axios from "axios";
+import { message } from 'ant-design-vue';
+
 
 const columns = [
   {
@@ -82,10 +84,14 @@ export default {
       }).then((response) => {
         this.loading = false;
         const data = response.data;
-        this.ebooks = data.content;
-        // 重置分页按钮
-        this.pagination.current = params.page;
-        this.pagination.total = data.content.total;
+        if (data.success) {
+          this.ebooks = data.content.list;
+          // 重置分页按钮
+          this.pagination.current = params.page;
+          this.pagination.total = data.content.total;
+        } else {
+          message.error(data.message);
+        }
       });
     },
     /**
@@ -100,14 +106,17 @@ export default {
     }
   },
   mounted() {
-    this.handleQuery({})
+    this.handleQuery({
+      page:1,
+      size: this.pagination.pageSize
+    })
   },
   data() {
     return {
       columns: columns,
       pagination: {
         current: 1,
-        pageSize: 10,
+        pageSize: 4,
         total: 0
       },
       loading: false,

@@ -1,4 +1,4 @@
-package com.caostudy.wiki.bo;
+package com.caostudy.wiki.req;
 
 public class DocQueryReq extends PageReq {
     @Override

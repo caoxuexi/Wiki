@@ -1,10 +1,11 @@
 package com.caostudy.wiki.service.impl;
 
-import com.caostudy.wiki.bo.EbookQueryReq;
+import com.caostudy.wiki.req.EbookQueryReq;
 import com.caostudy.wiki.domain.Ebook;
 import com.caostudy.wiki.domain.EbookExample;
 import com.caostudy.wiki.mapper.EbookMapper;
 import com.caostudy.wiki.resp.EbookQueryResp;
+import com.caostudy.wiki.resp.PageResp;
 import com.caostudy.wiki.service.EbookService;
 import com.caostudy.wiki.utils.CopyUtil;
 
@@ -13,12 +14,8 @@ import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -35,21 +32,25 @@ public class EbookServiceImpl implements EbookService {
     private EbookMapper ebookMapper;
 
     @Override
-    public List<EbookQueryResp> list(EbookQueryReq req) {
+    public PageResp<EbookQueryResp> list(EbookQueryReq req) {
         EbookExample ebookExample = new EbookExample();
         EbookExample.Criteria criteria = ebookExample.createCriteria();
         if (!StringUtils.isEmpty(req.getName())) {
             criteria.andNameLike("%" + req.getName() + "%");
         }
-        PageHelper.startPage(1,3);
+        PageHelper.startPage(req.getPage(),req.getSize());
         List<Ebook> ebookList = ebookMapper.selectByExample(ebookExample);
+        //只有用这个查询语句出来的list才能获取到准确的PageInfo，获取准确的total
         PageInfo<Ebook> pageInfo=new PageInfo<>(ebookList);
         LOG.info("总行数：{}",pageInfo.getTotal());
         LOG.info("总页数：{}",pageInfo.getPages());
-
         List<EbookQueryResp> respList = CopyUtil.copyList(ebookList, EbookQueryResp.class);
-        return respList;
+        PageResp<EbookQueryResp> pageResp=new PageResp();
+        pageResp.setTotal(pageInfo.getTotal());
+        pageResp.setList(respList);
+        return pageResp;
     }
+
 }
 
 

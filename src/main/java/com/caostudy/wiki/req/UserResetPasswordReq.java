@@ -1,16 +1,10 @@
-package com.caostudy.wiki.bo;
+package com.caostudy.wiki.req;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-public class UserSaveReq {
+public class UserResetPasswordReq {
     private Long id;
-
-    @NotNull(message = "【用户名】不能为空")
-    private String loginName;
-
-    @NotNull(message = "【昵称】不能为空")
-    private String name;
 
     @NotNull(message = "【密码】不能为空")
     // @Length(min = 6, max = 20, message = "【密码】6~20位")
@@ -23,22 +17,6 @@ public class UserSaveReq {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPassword() {
@@ -56,8 +34,6 @@ public class UserSaveReq {
         sb.append(" [");
         sb.append("Hash = ").append(hashCode());
         sb.append(", id=").append(id);
-        sb.append(", loginName=").append(loginName);
-        sb.append(", name=").append(name);
         sb.append(", password=").append(password);
         sb.append("]");
         return sb.toString();

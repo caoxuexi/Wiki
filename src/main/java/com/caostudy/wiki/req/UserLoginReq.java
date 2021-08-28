@@ -1,4 +1,4 @@
-package com.caostudy.wiki.bo;
+package com.caostudy.wiki.req;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
