@@ -22,9 +22,16 @@
             <a-button type="primary" @click="edit(record)">
               编辑
             </a-button>
-            <a-button type="danger">
-              删除
-            </a-button>
+            <a-popconfirm
+                title="删除后不可恢复，确认删除?"
+                ok-text="是"
+                cancel-text="否"
+                @confirm="handleDelete(record.id)"
+            >
+              <a-button type="danger">
+                删除
+              </a-button>
+            </a-popconfirm>
           </a-space>
         </template>
       </a-table>
@@ -38,10 +45,10 @@
   >
     <a-form :model="ebook" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
       <a-form-item label="封面">
-        <a-input v-model:value="ebook.cover" />
+        <a-input v-model:value="ebook.cover"/>
       </a-form-item>
       <a-form-item label="名称">
-        <a-input v-model:value="ebook.name" />
+        <a-input v-model:value="ebook.name"/>
       </a-form-item>
       <a-form-item label="分类">
         <a-cascader
@@ -51,7 +58,7 @@
         />
       </a-form-item>
       <a-form-item label="描述">
-        <a-input v-model:value="ebook.description" type="textarea" />
+        <a-input v-model:value="ebook.description" type="textarea"/>
       </a-form-item>
     </a-form>
   </a-modal>
@@ -59,9 +66,8 @@
 
 <script>
 import axios from "axios";
-import { message } from 'ant-design-vue';
+import {message} from 'ant-design-vue';
 import {Tool} from "@/util/tool";
-
 
 
 const columns = [
@@ -136,19 +142,36 @@ export default {
     /**
      * 对话框选择确定的逻辑，即保存数据
      */
-    handleModalOk () {
+    handleModalOk() {
       this.modalLoading = true;
-      this.ebook.category1Id =  this.categoryIds[0];
+      this.ebook.category1Id = this.categoryIds[0];
       this.ebook.category2Id = this.categoryIds[1];
-      axios.post("/ebook/save",  this.ebook).then((response) => {
+      axios.post("/ebook/save", this.ebook).then((response) => {
         this.modalLoading = false;
         const data = response.data; // data = commonResp
         if (data.success) {
           this.modalVisible = false;
           // 重新加载列表
           this.handleQuery({
-            page:  this.pagination.current,
-            size:  this.pagination.pageSize,
+            page: this.pagination.current,
+            size: this.pagination.pageSize,
+          });
+        } else {
+          message.error(data.message);
+        }
+      });
+    },
+    /**
+     * 删除电子书
+     */
+    handleDelete(id) {
+      axios.delete("/ebook/delete/" + id).then((response) => {
+        const data = response.data; // data = commonResp
+        if (data.success) {
+          // 重新加载列表
+          this.handleQuery({
+            page: this.pagination.current,
+            size: this.pagination.pageSize,
           });
         } else {
           message.error(data.message);
@@ -158,7 +181,7 @@ export default {
     /**
      * 点击操作中的编辑按钮，弹出对话框
      */
-    edit (record) {
+    edit(record) {
       console.log(record)
       this.modalVisible = true;
       this.ebook = Tool.copy(record);
@@ -167,14 +190,14 @@ export default {
     /**
      * 新增电子书
      */
-    add () {
+    add() {
       this.modalVisible = true;
       this.ebook = {};
     }
   },
   mounted() {
     this.handleQuery({
-      page:1,
+      page: 1,
       size: this.pagination.pageSize
     })
   },
@@ -191,18 +214,19 @@ export default {
       },
       param: "",
       //表单相关
-      ebook:"",
-      categoryIds:"",
-      modalVisible:false,
-      modalLoading:false,
-      level1:""
+      ebook: "",
+      categoryIds: "",
+      modalVisible: false,
+      modalLoading: false,
+      level1: ""
     }
   }
 }
 </script>
 
 <style>
-.ebookImg{
-  width: 50px;height: 50px
+.ebookImg {
+  width: 50px;
+  height: 50px
 }
 </style>

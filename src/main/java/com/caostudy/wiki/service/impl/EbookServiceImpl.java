@@ -59,9 +59,8 @@ public class EbookServiceImpl implements EbookService {
     }
 
     /**
-     * 保存ebook
+     * 新增或保存ebook
      * 根据有无id属性来判断是更新还是新增
-     *
      * @param req
      */
     @Override
@@ -70,11 +69,23 @@ public class EbookServiceImpl implements EbookService {
         if (StringUtils.isEmpty(req.getId())) {
             //新增
             ebook.setId(snowFlake.nextId());
+            ebook.setDocCount(0);
+            ebook.setViewCount(0);
+            ebook.setVoteCount(0);
             ebookMapper.insert(ebook);
         } else {
             //更新
             ebookMapper.updateByPrimaryKey(ebook);
         }
+    }
+
+    /**
+     * 删除ebook
+     * @param id
+     */
+    @Override
+    public void delete(Long id) {
+        ebookMapper.deleteByPrimaryKey(id);
     }
 }
 
