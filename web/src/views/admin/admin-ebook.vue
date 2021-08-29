@@ -17,7 +17,7 @@
         </template>
         <template v-slot:action="{ text, record }">
           <a-space size="small">
-            <a-button type="primary">
+            <a-button type="primary" @click="edit(record)">
               编辑
             </a-button>
             <a-button type="danger">
@@ -28,11 +28,38 @@
       </a-table>
     </a-layout-content>
   </a-layout>
+  <a-modal
+      title="电子书表单"
+      v-model:visible="modalVisible"
+      :confirm-loading="modalLoading"
+      @ok="handleModalOk"
+  >
+    <a-form :model="ebook" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
+      <a-form-item label="封面">
+        <a-input v-model:value="ebook.cover" />
+      </a-form-item>
+      <a-form-item label="名称">
+        <a-input v-model:value="ebook.name" />
+      </a-form-item>
+      <a-form-item label="分类">
+        <a-cascader
+            v-model:value="categoryIds"
+            :field-names="{ label: 'name', value: 'id', children: 'children' }"
+            :options="level1"
+        />
+      </a-form-item>
+      <a-form-item label="描述">
+        <a-input v-model:value="ebook.description" type="textarea" />
+      </a-form-item>
+    </a-form>
+  </a-modal>
 </template>
 
 <script>
 import axios from "axios";
 import { message } from 'ant-design-vue';
+import {Tool} from "@/util/tool";
+
 
 
 const columns = [
@@ -103,6 +130,37 @@ export default {
         page: pagination.current,
         size: pagination.pageSize
       });
+    },
+    /**
+     * 对话框选择确定的逻辑
+     */
+    handleModalOk () {
+      this.modalLoading = true;
+      this.ebook.category1Id =  this.categoryIds[0];
+      this.ebook.category2Id = this.categoryIds[1];
+      axios.post("/ebook/save",  this.ebook.value).then((response) => {
+        this.modalLoading = false;
+        const data = response.data; // data = commonResp
+        if (data.success) {
+          this.modalVisible = false;
+          // 重新加载列表
+          this.handleQuery({
+            page:  this.pagination.current,
+            size:  this.pagination.pageSize,
+          });
+        } else {
+          message.error(data.message);
+        }
+      });
+    },
+    /**
+     * 点击操作中的编辑按钮，弹出对话框
+     */
+    edit (record) {
+      console.log(record)
+      this.modalVisible = true;
+      this.ebook = Tool.copy(record);
+      this.categoryIds = [this.ebook.category1Id, this.ebook.category2Id]
     }
   },
   mounted() {
@@ -114,14 +172,21 @@ export default {
   data() {
     return {
       columns: columns,
+      // 电子书相关
+      loading: false,
+      ebooks: "",
       pagination: {
         current: 1,
         pageSize: 4,
         total: 0
       },
-      loading: false,
-      ebooks: "",
       param: "",
+      //表单相关
+      ebook:"",
+      categoryIds:"",
+      modalVisible:false,
+      modalLoading:false,
+      level1:""
     }
   }
 }
