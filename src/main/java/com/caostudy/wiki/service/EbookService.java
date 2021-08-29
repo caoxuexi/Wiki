@@ -1,6 +1,7 @@
 package com.caostudy.wiki.service;
 
 import com.caostudy.wiki.req.EbookQueryReq;
+import com.caostudy.wiki.req.EbookSaveReq;
 import com.caostudy.wiki.resp.EbookQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 
@@ -13,4 +14,6 @@ import java.util.List;
  */
 public interface EbookService {
     public PageResp<EbookQueryResp> list(EbookQueryReq req);
+
+    public void save(EbookSaveReq req);
 }

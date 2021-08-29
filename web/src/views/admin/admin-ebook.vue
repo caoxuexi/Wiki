@@ -1,9 +1,11 @@
 <template>
-
   <a-layout>
     <a-layout-content
         :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
     >
+      <p>
+        <a-button type="primary" @click="add()" size="large">新增</a-button>
+      </p>
       <a-table
           :columns="columns"
           :row-key="record => record.id"
@@ -13,7 +15,7 @@
           @change="handleTableChange"
       >
         <template #cover="{ text: cover }">
-          <img v-if="cover" :src="cover" alt="avatar"/>
+          <img class="ebookImg" v-if="cover" :src="cover" alt="avatar"/>
         </template>
         <template v-slot:action="{ text, record }">
           <a-space size="small">
@@ -132,13 +134,13 @@ export default {
       });
     },
     /**
-     * 对话框选择确定的逻辑
+     * 对话框选择确定的逻辑，即保存数据
      */
     handleModalOk () {
       this.modalLoading = true;
       this.ebook.category1Id =  this.categoryIds[0];
       this.ebook.category2Id = this.categoryIds[1];
-      axios.post("/ebook/save",  this.ebook.value).then((response) => {
+      axios.post("/ebook/save",  this.ebook).then((response) => {
         this.modalLoading = false;
         const data = response.data; // data = commonResp
         if (data.success) {
@@ -161,6 +163,13 @@ export default {
       this.modalVisible = true;
       this.ebook = Tool.copy(record);
       this.categoryIds = [this.ebook.category1Id, this.ebook.category2Id]
+    },
+    /**
+     * 新增电子书
+     */
+    add () {
+      this.modalVisible = true;
+      this.ebook = {};
     }
   },
   mounted() {
@@ -191,3 +200,9 @@ export default {
   }
 }
 </script>
+
+<style>
+.ebookImg{
+  width: 50px;height: 50px
+}
+</style>
