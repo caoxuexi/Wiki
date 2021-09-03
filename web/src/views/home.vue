@@ -3,46 +3,26 @@
     <a-layout-sider width="200" style="background: #fff">
       <a-menu
           mode="inline"
-          v-model:selectedKeys="selectedKeys2"
-          v-model:openKeys="openKeys"
           :style="{ height: '100%', borderRight: 0 }"
+          @click="handleClick"
+          :openKeys="openKeys"
       >
-        <a-sub-menu key="sub1">
-          <template #title>
-              <span>
-                <user-outlined/>
-                subnav 1
-              </span>
+        <a-menu-item key="welcome">
+          <MailOutlined/>
+          <span>欢迎</span>
+        </a-menu-item>
+        <a-sub-menu v-for="item in level1" :key="item.id" :disabled="true">
+          <template v-slot:title>
+            <span><user-outlined/>{{ item.name }}</span>
           </template>
-          <a-menu-item key="1">option1</a-menu-item>
-          <a-menu-item key="2">option2</a-menu-item>
-          <a-menu-item key="3">option3</a-menu-item>
-          <a-menu-item key="4">option4</a-menu-item>
+          <a-menu-item v-for="child in item.children" :key="child.id">
+            <MailOutlined/>
+            <span>{{ child.name }}</span>
+          </a-menu-item>
         </a-sub-menu>
-        <a-sub-menu key="sub2">
-          <template #title>
-              <span>
-                <laptop-outlined/>
-                subnav 2
-              </span>
-          </template>
-          <a-menu-item key="5">option5</a-menu-item>
-          <a-menu-item key="6">option6</a-menu-item>
-          <a-menu-item key="7">option7</a-menu-item>
-          <a-menu-item key="8">option8</a-menu-item>
-        </a-sub-menu>
-        <a-sub-menu key="sub3">
-          <template #title>
-              <span>
-                <notification-outlined/>
-                subnav 3
-              </span>
-          </template>
-          <a-menu-item key="9">option9</a-menu-item>
-          <a-menu-item key="10">option10</a-menu-item>
-          <a-menu-item key="11">option11</a-menu-item>
-          <a-menu-item key="12">option12</a-menu-item>
-        </a-sub-menu>
+        <a-menu-item key="tip" :disabled="true">
+          <span>以上菜单在分类管理配置</span>
+        </a-menu-item>
       </a-menu>
     </a-layout-sider>
     <a-layout-content
@@ -92,13 +72,13 @@ export default {
   },
 
   mounted() {
-    axios.get("/ebook/list",{
-      params:{
-        page:1,
-        size:1000
+    axios.get("/ebook/list", {
+      params: {
+        page: 1,
+        size: 1000
       }
     }).then((response) => {
-      const data=response.data;
+      const data = response.data;
       this.ebooks = data.content.list
     })
   },
@@ -118,7 +98,7 @@ export default {
           text: '2',
         },
       ],
-      ebooks: ""
+      ebooks: []
     }
   }
 }

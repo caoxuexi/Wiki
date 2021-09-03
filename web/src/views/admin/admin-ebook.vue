@@ -4,7 +4,22 @@
         :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
     >
       <p>
-        <a-button type="primary" @click="add()" size="large">新增</a-button>
+        <a-form layout="inline" :model="param">
+          <a-form-item>
+            <a-input v-model:value="param.name" placeholder="名称">
+            </a-input>
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" @click="handleQuery({page: 1, size: pagination.pageSize})">
+              查询
+            </a-button>
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" @click="add()">
+              新增
+            </a-button>
+          </a-form-item>
+        </a-form>
       </p>
       <a-table
           :columns="columns"
@@ -16,6 +31,9 @@
       >
         <template #cover="{ text: cover }">
           <img class="ebookImg" v-if="cover" :src="cover" alt="avatar"/>
+        </template>
+        <template v-slot:category="{ text, record }">
+          <span>{{ getCategoryName(record.category1Id) }} / {{ getCategoryName(record.category2Id) }}</span>
         </template>
         <template v-slot:action="{ text, record }">
           <a-space size="small">
@@ -133,7 +151,6 @@ export default {
      * 表格点击页码时触发
      */
     handleTableChange(pagination) {
-      console.log("看看自带的分页参数都有啥：" + pagination);
       this.handleQuery({
         page: pagination.current,
         size: pagination.pageSize
@@ -144,6 +161,7 @@ export default {
      */
     handleModalOk() {
       this.modalLoading = true;
+      //获取对话框中所选择的层级数据
       this.ebook.category1Id = this.categoryIds[0];
       this.ebook.category2Id = this.categoryIds[1];
       axios.post("/ebook/save", this.ebook).then((response) => {
@@ -179,11 +197,53 @@ export default {
       });
     },
     /**
+     * 查询分类信息
+     */
+    handleQueryCategory() {
+      this.loading = true;
+      axios.get("/category/all").then((response) => {
+        this.loading = false;
+        const data = response.data;
+        if (data.success) {
+          this.categorys = data.content;
+          console.log("原始数组：", this.categorys);
+
+          this.level1 = [];
+          this.level1 = Tool.array2Tree(this.categorys, 0);
+          console.log("树形结构：", this.level1);
+
+          // 加载完分类后，再加载电子书，否则如果分类树加载很慢，则电子书渲染会报错
+          this.handleQuery({
+            page: 1,
+            size:  this.pagination.pageSize,
+          });
+        } else {
+          message.error(data.message);
+        }
+      });
+    },
+    /**
+     * 获取电子书所属分类的方法
+     */
+    getCategoryName (cid) {
+      let result = "";
+      this.categorys.forEach((item) => {
+        // console.log(item)
+        if (item.id === cid) {
+          // return item.name; // 注意，这里直接return不起作用
+          result = item.name;
+        }
+      });
+      return result;
+    },
+    /**
      * 点击操作中的编辑按钮，弹出对话框
      */
     edit(record) {
       console.log(record)
       this.modalVisible = true;
+      //如果直接把record的值赋给this.ebook则会出现修改ebook致record也修改的情况，
+      // 所以我们更希望是一个深考别，
       this.ebook = Tool.copy(record);
       this.categoryIds = [this.ebook.category1Id, this.ebook.category2Id]
     },
@@ -196,29 +256,33 @@ export default {
     }
   },
   mounted() {
-    this.handleQuery({
-      page: 1,
-      size: this.pagination.pageSize
-    })
+    this.handleQueryCategory();
   },
   data() {
     return {
       columns: columns,
       // 电子书相关
       loading: false,
-      ebooks: "",
+      ebooks: [],
       pagination: {
         current: 1,
-        pageSize: 4,
+        pageSize: 5,
         total: 0
       },
-      param: "",
-      //表单相关
+
+      //搜索的参数
+      param: {},
+
+      //表单相关(含分类的id)
       ebook: "",
-      categoryIds: "",
+      categoryIds: [],  //a—model中选定的两级category数组
       modalVisible: false,
       modalLoading: false,
-      level1: ""
+
+      //分类的层级展示数据
+      level1: [],
+      //总的分类数据
+      categorys: [],
     }
   }
 }

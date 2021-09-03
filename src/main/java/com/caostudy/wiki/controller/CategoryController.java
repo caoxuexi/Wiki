@@ -1,11 +1,11 @@
 package com.caostudy.wiki.controller;
 
-import com.caostudy.wiki.req.EbookQueryReq;
-import com.caostudy.wiki.req.EbookSaveReq;
+import com.caostudy.wiki.req.CategoryQueryReq;
+import com.caostudy.wiki.req.CategorySaveReq;
 import com.caostudy.wiki.resp.CommonResp;
-import com.caostudy.wiki.resp.EbookQueryResp;
+import com.caostudy.wiki.resp.CategoryQueryResp;
 import com.caostudy.wiki.resp.PageResp;
-import com.caostudy.wiki.service.EbookService;
+import com.caostudy.wiki.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,34 +14,34 @@ import java.util.List;
 
 /**
  * @author Cao Study
- * @description EbookController
+ * @description CategoryController
  * @date 2021/8/24 18:43
  */
 @RestController
-@RequestMapping("/ebook")
-public class EbookController {
+@RequestMapping("/category")
+public class CategoryController {
     @Autowired
-    private EbookService ebookService;
+    private CategoryService categoryService;
 
-    @GetMapping("/list")
-    public CommonResp list(@Valid EbookQueryReq req) {
-        CommonResp<PageResp<EbookQueryResp>> resp = new CommonResp<>();
-        PageResp<EbookQueryResp> list = ebookService.list(req);
+    @GetMapping("/all")
+    public CommonResp all() {
+        CommonResp<List<CategoryQueryResp>> resp = new CommonResp<>();
+        List<CategoryQueryResp> list = categoryService.all();
         resp.setContent(list);
         return resp;
     }
 
     @PostMapping("/save")
-    public CommonResp save(@Valid @RequestBody EbookSaveReq req) {
+    public CommonResp save(@Valid @RequestBody CategorySaveReq req) {
         CommonResp resp = new CommonResp<>();
-        ebookService.save (req);
+        categoryService.save(req);
         return resp;
     }
 
     @DeleteMapping("/delete/{id}")
     public CommonResp delete(@PathVariable Long id) {
         CommonResp resp = new CommonResp<>();
-        ebookService.delete(id);
+        categoryService.delete(id);
         return resp;
     }
 }

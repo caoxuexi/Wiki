@@ -1,6 +1,6 @@
 <template>
   <a-layout-footer style="text-align: center">
-    小曹电子书
+    文档协同开发
   </a-layout-footer>
 </template>
 
