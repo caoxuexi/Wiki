@@ -45,6 +45,9 @@ public class EbookServiceImpl implements EbookService {
         if (!StringUtils.isEmpty(req.getName())) {
             criteria.andNameLike("%" + req.getName() + "%");
         }
+        if(!StringUtils.isEmpty(req.getCategoryId2())){
+            criteria.andCategory2IdEqualTo(req.getCategoryId2());
+        }
         PageHelper.startPage(req.getPage(), req.getSize());
         List<Ebook> ebookList = ebookMapper.selectByExample(ebookExample);
         //只有用这个查询语句出来的list才能获取到准确的PageInfo，获取准确的total

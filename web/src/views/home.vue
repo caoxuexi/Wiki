@@ -11,7 +11,7 @@
           <MailOutlined/>
           <span>欢迎</span>
         </a-menu-item>
-        <a-sub-menu v-for="item in level1" :key="item.id" :disabled="true">
+        <a-sub-menu v-for="item in level1" :key="item.id">
           <template v-slot:title>
             <span><user-outlined/>{{ item.name }}</span>
           </template>
@@ -28,7 +28,11 @@
     <a-layout-content
         :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
     >
-      <a-list item-layout="vertical" size="large" :grid="{gutter:20,column:3}"
+      <div class="welcome" v-show="isShowWelcome">
+        <!--   欢迎页面，后期用组件代替     -->
+        <span>欢迎来到电子书</span>
+      </div>
+      <a-list v-show="!isShowWelcome" item-layout="vertical" size="large" :grid="{gutter:20,column:3}"
               :data-source="ebooks">
         <template #footer>
           <div>
@@ -62,6 +66,8 @@
 <script>
 import axios from 'axios'
 import {StarOutlined, LikeOutlined, MessageOutlined} from '@ant-design/icons-vue';
+import {Tool} from "@/util/tool";
+import {message} from "ant-design-vue";
 
 export default {
   name: 'Home',
@@ -70,18 +76,60 @@ export default {
     LikeOutlined,
     MessageOutlined,
   },
+  methods: {
+    /**
+     * 二级分类菜单点击方法
+     * @param value
+     */
+    handleClick(value) {
+      console.log(value)
+      if (value.key === "welcome") {
+        this.isShowWelcome = true;
+      } else {
+        this.categoryId2 = value.key;
+        this.isShowWelcome = false;
+        this.handleQueryEbook();
+      }
+    },
+    /**
+     * 查询分类数据
+     */
+    handleQueryCategory() {
+      axios.get("/category/all").then((response) => {
+        const data = response.data;
+        if (data.success) {
+          this.categorys = data.content;
+          console.log("原始数组：", this.categorys);
+
+          this.level1 = [];
+          this.level1 = Tool.array2Tree(this.categorys, 0);
+          console.log("树形结构：", this.level1);
+        } else {
+          message.error(data.message);
+        }
+      });
+    },
+    /**
+     * 根据二级分类id分页查询电子书
+     */
+    handleQueryEbook() {
+      axios.get("/ebook/list", {
+        params: {
+          page: 1,
+          size: 1000,
+          categoryId2: this.categoryId2,
+        },
+      }).then((response) => {
+        const data = response.data;
+        this.ebooks = data.content.list;
+      });
+    }
+  },
 
   mounted() {
-    axios.get("/ebook/list", {
-      params: {
-        page: 1,
-        size: 1000
-      }
-    }).then((response) => {
-      const data = response.data;
-      this.ebooks = data.content.list
-    })
+    this.handleQueryCategory()
   },
+
   data() {
     return {
       actions: [
@@ -98,7 +146,12 @@ export default {
           text: '2',
         },
       ],
-      ebooks: []
+      ebooks: [],
+      level1: [],
+      //显示欢迎页面还是显示电子书
+      isShowWelcome: true,
+      //通过菜单选中的二级分类的id
+      categoryId2: 0,
     }
   }
 }
