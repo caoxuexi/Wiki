@@ -17,14 +17,6 @@
           </a-form-item>
         </a-form>
       </p>
-      <p>
-        <a-alert
-            class="tip"
-            message="小提示：这里的文档会显示到首页的侧边菜单"
-            type="info"
-            closable
-        />
-      </p>
       <a-table
           v-if="levels.length > 0"
           :columns="columns"
@@ -34,12 +26,12 @@
           :pagination="false"
           :defaultExpandAllRows="true"
       >
-        <template #cover="{ text: cover }">
-          <img v-if="cover" :src="cover" alt="avatar"/>
+        <template #name="{ text, record }">
+          {{ record.sort }} {{ text }}
         </template>
         <template v-slot:action="{ text, record }">
           <a-space size="small">
-            <a-button type="primary" @click="edit(record)">
+            <a-button type="primary" @click="edit(record)" size="small">
               编辑
             </a-button>
             <a-popconfirm
@@ -48,7 +40,7 @@
                 cancel-text="否"
                 @confirm="handleDelete(record.id)"
             >
-              <a-button type="danger">
+              <a-button type="danger" size="small">
                 删除
               </a-button>
             </a-popconfirm>
@@ -68,22 +60,30 @@
         <a-input v-model:value="doc.name"/>
       </a-form-item>
       <a-form-item label="父文档">
-        <a-select
+        <!-- 文档不能选择其自身或其自身的子节点作为父节点，不然会导致文档树中断，内容显示不出来  -->
+        <!--replaceFields是用于替换treeNode中title、value、key、children字段为treeData中对应的字段  -->
+        <a-tree-select
             v-model:value="doc.parent"
-            ref="select"
+            style="width: 100%"
+            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+            :tree-data="treeSelectData"
+            placeholder="请选择父文档"
+            tree-default-expand-all
+            :replaceFields="{title: 'name', key: 'id', value: 'id'}"
         >
-          <!--    一级文档      -->
-          <a-select-option :value="0">
-            无
-          </a-select-option>
-          <!--   disable用来防止父文档选到自己       -->
-          <a-select-option v-for="c in levels" :key="c.id" :value="c.id" :disabled="doc.id === c.id">
-            {{ c.name }}
-          </a-select-option>
-        </a-select>
+        </a-tree-select>
       </a-form-item>
       <a-form-item label="顺序">
         <a-input v-model:value="doc.sort"/>
+      </a-form-item>
+      <a-form-item>
+        <a-button type="primary" @click="handlePreviewContent()">
+          <EyeOutlined/>
+          内容预览
+        </a-button>
+      </a-form-item>
+      <a-form-item>
+        <div id="content"></div>
       </a-form-item>
     </a-form>
   </a-modal>
@@ -93,16 +93,14 @@
 import axios from "axios";
 import {message} from 'ant-design-vue';
 import {Tool} from "@/util/tool";
+import {useRoute} from "vue-router";
 
 
 const columns = [
   {
     title: '名称',
-    dataIndex: 'name'
-  },
-  {
-    title: '顺序',
-    dataIndex: 'sort'
+    dataIndex: 'name',
+    slots: {customRender: 'name'}
   },
   {
     title: 'Action',
@@ -168,26 +166,66 @@ export default {
       });
     },
     /**
-     * 点击操作中的编辑按钮，弹出对话框
-     */
-    edit(record) {
-      console.log(record)
-      this.modalVisible = true;
-      //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
-      // 所以我们更希望是一个深考别，
-      this.doc = Tool.copy(record);
-      this.docIds = [this.doc.doc1Id, this.doc.doc2Id]
-    },
-    /**
      * 新增文档
      */
     add() {
       this.modalVisible = true;
-      this.doc = {};
-    }
+      this.doc = {
+        ebookId:this.route.query.ebookId
+      };
+    },
+    /**
+     * 点击操作中的编辑按钮，弹出对话框
+     */
+    edit(record) {
+      this.modalVisible = true;
+      //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
+      // 所以我们更希望是一个深拷贝
+      this.doc = Tool.copy(record);
+
+      // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
+      this.treeSelectData= Tool.copy(this.levels);
+      this.setDisable(this.treeSelectData, record.id);
+
+      // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
+      this.treeSelectData.unshift({id: 0, name: '无'});
+    },
+    /**
+     * 将某节点及其子孙节点全部置为disabled（为文档选择父文档时）
+     * @param treeSelectData
+     * @param id
+     */
+    setDisable(treeSelectData, id) {
+      // console.log(treeSelectData, id);
+      // 遍历数组，即遍历某一层节点
+      for (let i = 0; i < treeSelectData.length; i++) {
+        const node = treeSelectData[i];
+        if (node.id === id) {
+          // 如果当前节点就是目标节点
+          console.log("disabled", node);
+          // 将目标节点设置为disabled
+          node.disabled = true;
+
+          // 遍历所有子节点，将所有子节点全部都加上disabled
+          const children = node.children;
+          if (Tool.isNotEmpty(children)) {
+            for (let j = 0; j < children.length; j++) {
+              this.setDisable(children, children[j].id)
+            }
+          }
+        } else {
+          // 如果当前节点不是目标节点，则到其子节点再找找看。
+          const children = node.children;
+          if (Tool.isNotEmpty(children)) {
+            this.setDisable(children, id);
+          }
+        }
+      }
+    },
   },
   mounted() {
     this.handleQuery()
+    this.route=useRoute()
   },
   data() {
     return {
@@ -202,7 +240,12 @@ export default {
       docIds: "",
       modalVisible: false,
       modalLoading: false,
-      levels: ""
+      //按等级分级后的菜单项，保持不变
+      levels: [],
+      //levels的数据拷贝，里面的属性是需要变化的
+      treeSelectData:[],
+      //前端传进来的路径参数
+      route:""
     }
   }
 }
