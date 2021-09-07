@@ -19,6 +19,8 @@ public interface DocService {
 
     public void delete(Long id);
 
+    public void delete(List<String> ids);
+
     @Deprecated
     public PageResp<DocQueryResp> list(DocQueryReq req);
 
