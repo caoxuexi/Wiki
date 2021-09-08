@@ -1,7 +1,9 @@
 package com.caostudy.wiki.service.impl;
 
+import com.caostudy.wiki.domain.Content;
 import com.caostudy.wiki.domain.Doc;
 import com.caostudy.wiki.domain.DocExample;
+import com.caostudy.wiki.mapper.ContentMapper;
 import com.caostudy.wiki.mapper.DocMapper;
 import com.caostudy.wiki.req.DocQueryReq;
 import com.caostudy.wiki.req.DocSaveReq;
@@ -32,12 +34,16 @@ public class DocServiceImpl implements DocService {
     @Autowired
     private DocMapper docMapper;
 
+    @Autowired
+    private ContentMapper contentMapper;
+
     //雪花算法
     @Autowired
     private SnowFlake snowFlake;
 
     /**
      * 查询所有分裂
+     *
      * @return
      */
     @Override
@@ -54,6 +60,7 @@ public class DocServiceImpl implements DocService {
 
     /**
      * 分页查询方法
+     *
      * @param req
      * @return
      */
@@ -88,18 +95,35 @@ public class DocServiceImpl implements DocService {
     @Override
     public void save(DocSaveReq req) {
         Doc doc = CopyUtil.copy(req, Doc.class);
+        Content content = CopyUtil.copy(req, Content.class);
+        //因为doc.id=content.id所以这里还是判断doc的id就可以了
         if (ObjectUtils.isEmpty(req.getId())) {
             // 新增
             doc.setId(snowFlake.nextId());
             docMapper.insert(doc);
+
+            content.setId(doc.getId());
+            contentMapper.insert(content);
         } else {
             // 更新
             docMapper.updateByPrimaryKey(doc);
+            /**
+             * Blob代表富文本字段，如果我们一张表既有大字段又有小字段则
+             * updateByPrimaryKey和updateByPrimaryKeyWithBLOBs两个方法都会生成
+             * updateByPrimaryKey是没有关于大字段的操作的
+             * updateByPrimaryKeyWithBLOBs会带上大字段
+             * 同样的还有selectByExample和selectByExampleWithBLOBs
+             */
+            int count=contentMapper.updateByPrimaryKeyWithBLOBs(content);
+            //更新，如果没有则插入。因为有些时候文档的id有，但是content的我们没有去做
+            if (count==0){
+                contentMapper.insert(content);
+            }
         }
     }
 
     /**
-     * 删除doc
+     * 根据id删除doc
      * @param id
      */
     @Override
@@ -107,12 +131,22 @@ public class DocServiceImpl implements DocService {
         docMapper.deleteByPrimaryKey(id);
     }
 
+    /**
+     * 批量删除doc
+     * @param ids
+     */
     @Override
     public void delete(List<String> ids) {
         DocExample docExample = new DocExample();
         DocExample.Criteria criteria = docExample.createCriteria();
         criteria.andIdIn(ids);
         docMapper.deleteByExample(docExample);
+    }
+
+    @Override
+    public String findContent(Long id) {
+        Content content=contentMapper.selectByPrimaryKey(id);
+        return content.getContent();
     }
 }
 

@@ -154,14 +154,14 @@ export default {
      * 对话框选择确定的逻辑，即保存数据
      */
     handleSave() {
-      this.modalLoading = true;
-      this.doc.doc1Id = this.docIds[0];
-      this.doc.doc2Id = this.docIds[1];
+      this.modalLoading= true;
+      this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         this.modalLoading = false;
         const data = response.data; // data = commonResp
         if (data.success) {
-          this.modalVisible = false;
+          // modalVisible.value = false;
+          message.success("保存成功！");
           // 重新加载列表
           this.handleQuery();
         } else {
@@ -202,6 +202,8 @@ export default {
      * 新增文档
      */
     add() {
+      // 清空富文本框
+      this.editor.txt.html("")
       this.modalVisible = true;
       this.doc = {
         ebookId: this.route.query.ebookId
@@ -213,13 +215,14 @@ export default {
       this.treeSelectData.unshift({id: 0, name: '无'});
     },
     /**
-     * 点击操作中的编辑按钮，弹出对话框
+     * 点击编辑按钮触发的方法
      */
     edit(record) {
       this.modalVisible = true;
       //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
       // 所以我们更希望是一个深拷贝
       this.doc = Tool.copy(record);
+      this.handleQueryContent()
 
       // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
       this.treeSelectData = Tool.copy(this.levels);
@@ -240,7 +243,7 @@ export default {
         const node = treeSelectData[i];
         if (node.id === id) {
           // 如果当前节点就是目标节点
-          console.log("disabled", node);
+          // console.log("disabled", node);
           // 将目标节点设置为disabled
           node.disabled = true;
 
@@ -272,9 +275,9 @@ export default {
         const node = treeSelectData[i];
         if (node.id === id) {
           // 如果当前节点就是目标节点
-          console.log("delete", node);
+          // console.log("delete", node);
           // 将目标ID放入结果集ids
-          // node.disabled = true;
+          node.disabled = true;
           this.deleteIds.push(id);
           this.deleteNames.push(node.name);
 
@@ -293,7 +296,20 @@ export default {
           }
         }
       }
-    }
+    },
+    /**
+     * 获取文档内容
+     */
+    handleQueryContent ()  {
+      axios.get("/doc/find-content/" + this.doc.id).then((response) => {
+        const data = response.data;
+        if (data.success) {
+          this.editor.txt.html(data.content)
+        } else {
+          message.error(data.message);
+        }
+      });
+    },
   },
   mounted() {
     this.handleQuery()

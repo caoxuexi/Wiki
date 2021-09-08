@@ -24,4 +24,5 @@ public interface DocService {
     @Deprecated
     public PageResp<DocQueryResp> list(DocQueryReq req);
 
+    public String findContent(Long id);
 }
