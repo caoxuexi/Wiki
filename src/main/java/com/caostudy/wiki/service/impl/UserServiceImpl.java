@@ -117,6 +117,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 修改密码
      */
+    @Override
     public void resetPassword(UserResetPasswordReq req) {
         User user = CopyUtil.copy(req, User.class);
         userMapper.updateByPrimaryKeySelective(user);
@@ -125,6 +126,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 登录
      */
+    @Override
     public UserLoginResp login(UserLoginReq req) {
         User userDb = selectByLoginName(req.getLoginName());
         if (ObjectUtils.isEmpty(userDb)) {

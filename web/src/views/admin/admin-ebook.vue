@@ -271,7 +271,7 @@ export default {
       ebooks: [],
       pagination: {
         current: 1,
-        pageSize: 10,
+        pageSize: 7,
         total: 0
       },
 

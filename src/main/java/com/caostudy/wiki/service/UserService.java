@@ -1,7 +1,10 @@
 package com.caostudy.wiki.service;
 
+import com.caostudy.wiki.req.UserLoginReq;
 import com.caostudy.wiki.req.UserQueryReq;
+import com.caostudy.wiki.req.UserResetPasswordReq;
 import com.caostudy.wiki.req.UserSaveReq;
+import com.caostudy.wiki.resp.UserLoginResp;
 import com.caostudy.wiki.resp.UserQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 
@@ -17,4 +20,7 @@ public interface UserService {
 
     public void delete(Long id);
 
+    UserLoginResp login(UserLoginReq req);
+
+    void resetPassword(UserResetPasswordReq req);
 }

@@ -91,9 +91,9 @@
 import axios from 'axios';
 import {message} from 'ant-design-vue';
 import {Tool} from "@/util/tool";
+import md5 from "/public/js/md5"
 
-let hexMd5
-let KEY
+
 const columns = [
   {
     title: '登陆名',
@@ -189,7 +189,8 @@ export default {
     handleModalOk() {
       this.modalLoading = true;
 
-      this.user.password = hexMd5(this.user.password + KEY);
+      // this.user.password = hexMd5(this.user.password + KEY);
+      this.user.password = md5.hexMd5(this.user.password + md5.KEY);
 
       axios.post("/user/save", this.user).then((response) => {
         this.modalLoading = false;
@@ -245,7 +246,8 @@ export default {
     handleResetModalOk() {
       this.resetModalLoading = true;
 
-      this.user.password = hexMd5(this.user.password + KEY);
+      // this.user.password = hexMd5(this.user.password + KEY);
+      this.user.password = md5.hexMd5(this.user.password + md5.KEY);
 
       axios.post("/user/reset-password", this.user).then((response) => {
         this.resetModalLoading = false;
