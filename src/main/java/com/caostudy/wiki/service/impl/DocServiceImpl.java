@@ -42,13 +42,14 @@ public class DocServiceImpl implements DocService {
     private SnowFlake snowFlake;
 
     /**
-     * 查询所有分裂
-     *
+     * 查询指定ebook的文档
      * @return
+     * @param ebookId
      */
     @Override
-    public List<DocQueryResp> all() {
+    public List<DocQueryResp> all(Long ebookId) {
         DocExample docExample = new DocExample();
+        docExample.createCriteria().andEbookIdEqualTo(ebookId);
         docExample.setOrderByClause("sort asc");
         List<Doc> docList = docMapper.selectByExample(docExample);
 
@@ -146,7 +147,11 @@ public class DocServiceImpl implements DocService {
     @Override
     public String findContent(Long id) {
         Content content=contentMapper.selectByPrimaryKey(id);
-        return content.getContent();
+        if(ObjectUtils.isEmpty(content)){
+            return "";
+        }else{
+            return content.getContent();
+        }
     }
 }
 

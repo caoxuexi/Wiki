@@ -22,10 +22,10 @@ public class DocController {
     @Autowired
     private DocService docService;
 
-    @GetMapping("/all")
-    public CommonResp all() {
+    @GetMapping("/all/{ebookId}")
+    public CommonResp all(@PathVariable Long ebookId) {
         CommonResp<List<DocQueryResp>> resp = new CommonResp<>();
-        List<DocQueryResp> list = docService.all();
+        List<DocQueryResp> list = docService.all(ebookId);
         resp.setContent(list);
         return resp;
     }
@@ -39,6 +39,7 @@ public class DocController {
 
     @DeleteMapping("/delete/{idsStr}")
     public CommonResp delete(@PathVariable String idsStr) {
+        //这个ids是1,2,3这样的格式字符串
         CommonResp resp = new CommonResp<>();
         List<String> list = Arrays.asList(idsStr.split(","));
         docService.delete(list);

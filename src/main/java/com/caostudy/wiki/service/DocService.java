@@ -13,7 +13,7 @@ import java.util.List;
  * @date 2021/8/24 18:51
  */
 public interface DocService {
-    public List<DocQueryResp> all();
+    public List<DocQueryResp> all(Long ebookId);
 
     public void save(DocSaveReq req);
 

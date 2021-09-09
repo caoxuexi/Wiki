@@ -135,7 +135,7 @@ export default {
       this.loading = true;
       // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
       this.levels = [];
-      axios.get("/doc/all").then((response) => {
+      axios.get("/doc/all/" + this.route.query.ebookId).then((response) => {
         this.loading = false;
         const data = response.data;
         if (data.success) {
@@ -145,6 +145,11 @@ export default {
           this.levels = [];
           this.levels = Tool.array2Tree(this.docs, 0);
           // console.log("树形结构：", this.levels);
+
+          //父文档下拉框初始化，相当于点击新增
+          this.treeSelectData = Tool.copy(this.levels)
+          // 为选择树添加一个"无"
+          this.treeSelectData.unshift({id: 0, name: '无'});
         } else {
           message.error(data.message);
         }
@@ -154,7 +159,7 @@ export default {
      * 对话框选择确定的逻辑，即保存数据
      */
     handleSave() {
-      this.modalLoading= true;
+      this.modalLoading = true;
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         this.modalLoading = false;
@@ -164,6 +169,7 @@ export default {
           message.success("保存成功！");
           // 重新加载列表
           this.handleQuery();
+
         } else {
           message.error(data.message);
         }
@@ -205,9 +211,7 @@ export default {
       // 清空富文本框
       this.editor.txt.html("")
       this.modalVisible = true;
-      this.doc = {
-        ebookId: this.route.query.ebookId
-      };
+
       //全部都能选
       this.treeSelectData = Tool.copy(this.levels) || [];
 
@@ -300,7 +304,7 @@ export default {
     /**
      * 获取文档内容
      */
-    handleQueryContent ()  {
+    handleQueryContent() {
       axios.get("/doc/find-content/" + this.doc.id).then((response) => {
         const data = response.data;
         if (data.success) {
@@ -310,13 +314,25 @@ export default {
         }
       });
     },
+    handlePreviewContent() {
+      const html = this.editor.txt.html();
+      this.previewHtml = html;
+      this.drawerVisible = true;
+
+    },
+    onDrawerClose() {
+      this.drawerVisible = false;
+    }
   },
   mounted() {
-    this.handleQuery()
     this.route = useRoute()
-    this.editor= new E('#content')
+    this.doc = {
+      ebookId: this.route.query.ebookId
+    };
+    this.handleQuery()
+    this.editor = new E('#content')
     //设置层优先级(0的话，它之上就没有东西可以覆盖它)，这样我们选择父分类时就不会挡住富文本编辑器了
-    this.editor.config.zIndex=0;
+    this.editor.config.zIndex = 0;
     this.editor.create();
 
   },
@@ -329,7 +345,7 @@ export default {
       //搜索的参数（先保留）
       param: {},
       //表单相关
-      doc: "",
+      doc: {},
       docIds: "",
       modalVisible: false,
       modalLoading: false,
@@ -342,8 +358,11 @@ export default {
       deleteIds: deleteIds,
       deleteNames: deleteNames,
       //富文本编辑器
-      editor:{}
-
+      editor: {},
+      //是否展示内容预览
+      drawerVisible: false,
+      //内容预览用的数据
+      previewHtml: "",
     }
   }
 }
