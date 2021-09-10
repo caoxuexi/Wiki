@@ -1,17 +1,20 @@
-SessionStorage = {
-    get: function (key) {
-        var v = sessionStorage.getItem(key);
+export class SessionStorage{
+    static get (key) {
+        const v = sessionStorage.getItem(key);
         if (v && typeof(v) !== "undefined" && v !== "undefined") {
             return JSON.parse(v);
         }
-    },
-    set: function (key, data) {
+    }
+
+    static set(key, data) {
         sessionStorage.setItem(key, JSON.stringify(data));
-    },
-    remove: function (key) {
+    }
+    static remove(key) {
         sessionStorage.removeItem(key);
-    },
-    clearAll: function () {
+    }
+
+    static clearAll () {
         sessionStorage.clear();
     }
-};
+}
+
