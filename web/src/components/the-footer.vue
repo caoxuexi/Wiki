@@ -1,6 +1,6 @@
 <template>
   <a-layout-footer style="text-align: center">
-    文档协同开发 {{user.name}}
+    文档协同开发<span v-show="user.id">，欢迎：{{user.name}}</span>
   </a-layout-footer>
 </template>
 
@@ -14,6 +14,5 @@
         return store.state.user
       }
     }
-
   };
 </script>
