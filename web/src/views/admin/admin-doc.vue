@@ -88,7 +88,8 @@
               </a-button>
             </a-form-item>
             <a-form-item>
-              <div id="content"></div>
+              <!-- 没有其它人在操作的时候才显示-->
+              <div id="content" v-show="!isSomeoneOperating"></div>
             </a-form-item>
           </a-form>
         </a-col>
@@ -364,6 +365,8 @@ export default {
       drawerVisible: false,
       //内容预览用的数据
       previewHtml: "",
+      //是否已经有人在操作文档了
+      isSomeoneOperating: false
     }
   }
 }
