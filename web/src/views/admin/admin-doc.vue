@@ -19,6 +19,7 @@
               </a-form-item>
             </a-form>
           </p>
+          <h3 v-if="levels.length === 0">目前项目并未创建文档</h3>
           <a-table
               v-if="levels.length > 0"
               :columns="columns"
@@ -146,8 +147,8 @@ export default {
           this.levels = Tool.array2Tree(this.docs, 0);
           // console.log("树形结构：", this.levels);
 
-          //父文档下拉框初始化，相当于点击新增
-          this.treeSelectData = Tool.copy(this.levels)
+          //父文档下拉框初始化，相当于点击新增,如果levels没数据则使用[]
+          this.treeSelectData = Tool.copy(this.levels) || []
           // 为选择树添加一个"无"
           this.treeSelectData.unshift({id: 0, name: '无'});
         } else {
