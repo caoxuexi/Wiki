@@ -4,6 +4,7 @@
       <a-row>
         <a-col :span="6">
           <!-- 樹形展示文档结构 -->
+          <h3 v-if="level1.length === 0">目前项目并未创建文档</h3>
           <a-tree
               v-if="level1.length > 0"
               :tree-data="level1"

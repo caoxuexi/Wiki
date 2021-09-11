@@ -26,19 +26,18 @@
       <a-menu-item key="/">
         <router-link to="/">首页</router-link>
       </a-menu-item>
-      <a-menu-item key="/admin/user">
+      <a-menu-item key="/admin/user" v-if="user.id">
         <router-link to="/admin/user">用户管理</router-link>
       </a-menu-item>
-      <a-menu-item key="/admin/ebook">
+      <a-menu-item key="/admin/ebook"  v-if="user.id">
         <router-link to="/admin/ebook">项目管理</router-link>
       </a-menu-item>
-      <a-menu-item key="/admin/category">
+      <a-menu-item key="/admin/category"  v-if="user.id">
         <router-link to="/admin/category">分类管理</router-link>
       </a-menu-item>
       <a-menu-item key="/about">
         <router-link to="/about">关于我们</router-link>
       </a-menu-item>
-
     </a-menu>
 
     <a-modal
@@ -47,11 +46,11 @@
         :confirm-loading="loginModalLoading"
         @ok="login"
     >
-      <a-form :model="loginUser" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
-        <a-form-item label="登录名">
+      <a-form :model="loginUser" :rules="rules" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
+        <a-form-item label="登录名" name="loginName">
           <a-input v-model:value="loginUser.loginName"/>
         </a-form-item>
-        <a-form-item label="密码">
+        <a-form-item label="密码" name="password">
           <a-input v-model:value="loginUser.password" type="password"/>
         </a-form-item>
       </a-form>
@@ -69,12 +68,30 @@ export default {
   name: 'the-header',
   data() {
     return {
+      loginModalVisible: false,
+      loginModalLoading: false,
       loginUser: {
         loginName: "cao",
         password: ""
       },
-      loginModalVisible: false,
-      loginModalLoading: false,
+      rules: {
+        loginName: [{
+          required: true,
+          message: "用户名不能为空",
+          trigger: 'blur'
+        }],
+        password: [{
+          required: true,
+          validator: async (rule, value) => {
+            if (value.length < 6 || value.length > 20) {
+              return Promise.reject('密码长度不符合规范，需在6~20位之间')
+            } else {
+              return Promise.resolve();
+            }
+          },
+          trigger: 'blur'
+        }]
+      }
     }
   },
   computed: {

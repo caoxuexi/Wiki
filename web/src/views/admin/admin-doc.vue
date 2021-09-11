@@ -59,6 +59,9 @@
                 <a-button type="primary" @click="handleSave()">
                   保存
                 </a-button>
+                <SyncOutlined spin style="margin-left: 20px" />
+                <span v-if="doc.id">当前正在编辑：{{doc.name}}</span>
+                <span v-if="!doc.id">当前正在新增文档</span>
               </a-form-item>
             </a-form>
           </p>
@@ -161,13 +164,10 @@ export default {
      * 对话框选择确定的逻辑，即保存数据
      */
     handleSave() {
-      this.modalLoading = true;
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
-        this.modalLoading = false;
         const data = response.data; // data = commonResp
         if (data.success) {
-          // modalVisible.value = false;
           message.success("保存成功！");
           // 重新加载列表
           this.handleQuery();
@@ -212,7 +212,7 @@ export default {
     add() {
       // 清空富文本框
       this.editor.txt.html("")
-      this.modalVisible = true;
+      this.doc={}
 
       //全部都能选
       this.treeSelectData = Tool.copy(this.levels) || [];
@@ -224,7 +224,6 @@ export default {
      * 点击编辑按钮触发的方法
      */
     edit(record) {
-      this.modalVisible = true;
       //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
       // 所以我们更希望是一个深拷贝
       this.doc = Tool.copy(record);
@@ -349,8 +348,6 @@ export default {
       //表单相关
       doc: {},
       docIds: "",
-      modalVisible: false,
-      modalLoading: false,
       //按等级分级后的菜单项，保持不变
       levels: [],
       //levels的数据拷贝，里面的属性是需要变化的
