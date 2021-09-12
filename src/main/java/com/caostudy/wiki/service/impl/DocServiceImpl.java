@@ -13,10 +13,7 @@ import com.caostudy.wiki.req.DocSaveReq;
 import com.caostudy.wiki.resp.DocQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 import com.caostudy.wiki.service.DocService;
-import com.caostudy.wiki.utils.CopyUtil;
-import com.caostudy.wiki.utils.RedisUtil;
-import com.caostudy.wiki.utils.RequestContext;
-import com.caostudy.wiki.utils.SnowFlake;
+import com.caostudy.wiki.utils.*;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
@@ -50,7 +47,7 @@ public class DocServiceImpl implements DocService {
     @Autowired
     private SnowFlake snowFlake;
     @Autowired
-    private RedisUtil redisUtil;
+    private RedisOperator redisOperator;
 
     /**
      * 查询指定ebook的文档
@@ -195,7 +192,7 @@ public class DocServiceImpl implements DocService {
         // docMapperCust.increaseVoteCount(id);
         // 远程IP+doc.id作为key，24小时内不能重复, 同一ip一天只能点赞一次
         String ip = RequestContext.getRemoteAddr();
-        if (redisUtil.validateRepeat("DOC_VOTE_" + id + "_" + ip, 3600*24)) {
+        if (redisOperator.validateRepeat("DOC_VOTE_" + id + "_" + ip, 3600*24)) {
             docMapperCustom.increaseVoteCount(id);
         } else {
             throw new BusinessException(BusinessExceptionCodeEnum.VOTE_REPEAT);

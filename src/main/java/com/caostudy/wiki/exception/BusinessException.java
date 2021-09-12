@@ -4,9 +4,21 @@ public class BusinessException extends RuntimeException{
 
     private BusinessExceptionCodeEnum code;
 
+    /**
+     * 通过BusinessExceptionCodeEnum这个枚举内定义的message进行固定信息返回
+     * @param code
+     */
     public BusinessException (BusinessExceptionCodeEnum code) {
         super(code.getDesc());
         this.code = code;
+    }
+
+    /**
+     * 用于处理需要变量的错误信息返回
+     * @param message
+     */
+    public BusinessException (String message) {
+        super(message);
     }
 
     public BusinessExceptionCodeEnum getCode() {
