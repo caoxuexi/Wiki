@@ -3,19 +3,25 @@ package com.caostudy.wiki.service.impl;
 import com.caostudy.wiki.domain.Content;
 import com.caostudy.wiki.domain.Doc;
 import com.caostudy.wiki.domain.DocExample;
+import com.caostudy.wiki.exception.BusinessException;
+import com.caostudy.wiki.exception.BusinessExceptionCodeEnum;
 import com.caostudy.wiki.mapper.ContentMapper;
 import com.caostudy.wiki.mapper.DocMapper;
+import com.caostudy.wiki.mapper.DocMapperCustom;
 import com.caostudy.wiki.req.DocQueryReq;
 import com.caostudy.wiki.req.DocSaveReq;
 import com.caostudy.wiki.resp.DocQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 import com.caostudy.wiki.service.DocService;
 import com.caostudy.wiki.utils.CopyUtil;
+import com.caostudy.wiki.utils.RedisUtil;
+import com.caostudy.wiki.utils.RequestContext;
 import com.caostudy.wiki.utils.SnowFlake;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -37,9 +43,14 @@ public class DocServiceImpl implements DocService {
     @Autowired
     private ContentMapper contentMapper;
 
+    @Autowired
+    private DocMapperCustom docMapperCustom;
+
     //雪花算法
     @Autowired
     private SnowFlake snowFlake;
+    @Autowired
+    private RedisUtil redisUtil;
 
     /**
      * 查询指定ebook的文档
@@ -101,6 +112,8 @@ public class DocServiceImpl implements DocService {
         if (ObjectUtils.isEmpty(req.getId())) {
             // 新增
             doc.setId(snowFlake.nextId());
+            doc.setViewCount(0);
+            doc.setVoteCount(0);
             docMapper.insert(doc);
 
             content.setId(doc.getId());
@@ -144,13 +157,48 @@ public class DocServiceImpl implements DocService {
         docMapper.deleteByExample(docExample);
     }
 
+    /**
+     * 查出对应文档的内容
+     * @param id
+     * @return
+     */
     @Override
     public String findContent(Long id) {
         Content content=contentMapper.selectByPrimaryKey(id);
+
         if(ObjectUtils.isEmpty(content)){
             return "";
         }else{
             return content.getContent();
+        }
+    }
+
+    /**
+     * 查出对应文档内容的同时，增加文档阅读数
+     * @param id
+     * @return
+     */
+    @Override
+    public String findContentWithViewIncr(Long id) {
+        Content content=contentMapper.selectByPrimaryKey(id);
+        docMapperCustom.increaseViewCount(id);
+
+        if(ObjectUtils.isEmpty(content)){
+            return "";
+        }else{
+            return content.getContent();
+        }
+    }
+
+    @Override
+    public void vote(Long id) {
+        // docMapperCust.increaseVoteCount(id);
+        // 远程IP+doc.id作为key，24小时内不能重复, 同一ip一天只能点赞一次
+        String ip = RequestContext.getRemoteAddr();
+        if (redisUtil.validateRepeat("DOC_VOTE_" + id + "_" + ip, 3600*24)) {
+            docMapperCustom.increaseVoteCount(id);
+        } else {
+            throw new BusinessException(BusinessExceptionCodeEnum.VOTE_REPEAT);
         }
     }
 }

@@ -78,7 +78,7 @@ export default {
      * 内容查询
      **/
     handleQueryContent(id) {
-      axios.get("/doc/find-content/" + id).then((response) => {
+      axios.get("/doc/view/" + id).then((response) => {
         const data = response.data;
         if (data.success) {
           this.html = data.content;

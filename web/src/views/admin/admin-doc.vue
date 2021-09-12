@@ -60,7 +60,7 @@
                   保存
                 </a-button>
                 <SyncOutlined spin style="margin-left: 20px" />
-                <span v-if="doc.id">当前正在编辑：{{doc.name}}</span>
+                <span v-if="doc.id">当前正在编辑：{{editingDocName}}</span>
                 <span v-if="!doc.id">当前正在新增文档</span>
               </a-form-item>
             </a-form>
@@ -171,6 +171,8 @@ export default {
           message.success("保存成功！");
           // 重新加载列表
           this.handleQuery();
+          //更新正在操作的文档名(当我们修改了文档名进行保存的时候)
+          this.editingDocName=this.doc.name
 
         } else {
           message.error(data.message);
@@ -232,7 +234,7 @@ export default {
       // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
       this.treeSelectData = Tool.copy(this.levels);
       this.setDisable(this.treeSelectData, record.id);
-
+      this.editingDocName=this.doc.name
       // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
       this.treeSelectData.unshift({id: 0, name: '无'});
     },
@@ -363,7 +365,9 @@ export default {
       //内容预览用的数据
       previewHtml: "",
       //是否已经有人在操作文档了
-      isSomeoneOperating: false
+      isSomeoneOperating: false,
+      //正在操作的文档名
+      editingDocName:""
     }
   }
 }

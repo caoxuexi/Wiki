@@ -25,4 +25,8 @@ public interface DocService {
     public PageResp<DocQueryResp> list(DocQueryReq req);
 
     public String findContent(Long id);
+
+    String findContentWithViewIncr(Long id);
+
+    void vote(Long id);
 }
