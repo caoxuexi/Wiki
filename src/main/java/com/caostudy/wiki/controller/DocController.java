@@ -82,6 +82,11 @@ public class DocController {
     @GetMapping("/checkinDocs/{id}")
     public CommonResp checkinDocs(@PathVariable Integer docsId){
         CommonResp commonResp = new CommonResp();
+        lockCheckin(docsId);
+        return commonResp;
+    }
+
+    public void lockCheckin(Integer docsId){
         String username= LoginUserContext.getUser().getName();
 
         String userLock = redisOperator.get(docsId.toString());
@@ -95,7 +100,6 @@ public class DocController {
             //如果操作的不是同一个人，则提示当前的文档操作人，并禁止操作
             throw new BusinessException("当前"+userLock+"正在操作文档");
         }
-        return commonResp;
     }
 
     @GetMapping("/checkoutDocs/{id}")
