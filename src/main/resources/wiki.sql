@@ -11,7 +11,7 @@
  Target Server Version : 80023
  File Encoding         : 65001
 
- Date: 10/09/2021 11:17:20
+ Date: 14/09/2021 11:26:19
 */
 
 SET NAMES utf8mb4;
@@ -62,12 +62,12 @@ CREATE TABLE `content`  (
 -- ----------------------------
 -- Records of content
 -- ----------------------------
-INSERT INTO `content` VALUES (1, '<p>1234565</p>');
+INSERT INTO `content` VALUES (1, '<h1 id=\"w1irw\">当前是曹学习1号的文档</h1>');
 INSERT INTO `content` VALUES (2, '<pre><code class=\"Java\"><xmp>@Service\npublic class DocServiceImpl implements DocService {\n    private static final Logger LOG = LoggerFactory.getLogger(DocServiceImpl.class);\n\n    @Autowired\n    private DocMapper docMapper;\n\n    @Autowired\n    private ContentMapper contentMapper;\n\n    //雪花算法\n    @Autowired\n    private SnowFlake snowFlake;\n\n    /**\n     * 查询指定ebook的文档\n     * @return\n     * @param ebookId\n     */\n    @Override\n    public List<DocQueryResp> all(Long ebookId) {\n        DocExample docExample = new DocExample();\n        docExample.createCriteria().andEbookIdEqualTo(ebookId);\n        docExample.setOrderByClause(\"sort asc\");\n        List<Doc> docList = docMapper.selectByExample(docExample);\n\n        // 列表复制\n        List<DocQueryResp> list = CopyUtil.copyList(docList, DocQueryResp.class);\n        return list;\n    }\n\n\n    /**\n     * 分页查询方法\n     *\n     * @param req\n     * @return\n     */\n    @Deprecated\n    @Override\n    public PageResp<DocQueryResp> list(DocQueryReq req) {\n        DocExample docExample = new DocExample();\n        docExample.setOrderByClause(\"sort asc\");\n        DocExample.Criteria criteria = docExample.createCriteria();\n        PageHelper.startPage(req.getPage(), req.getSize());\n        List<Doc> docList = docMapper.selectByExample(docExample);\n\n        PageInfo<Doc> pageInfo = new PageInfo<>(docList);\n        LOG.info(\"总行数：{}\", pageInfo.getTotal());\n        LOG.info(\"总页数：{}\", pageInfo.getPages());\n\n        // 列表复制\n        List<DocQueryResp> list = CopyUtil.copyList(docList, DocQueryResp.class);\n\n        PageResp<DocQueryResp> pageResp = new PageResp();\n        pageResp.setTotal(pageInfo.getTotal());\n        pageResp.setList(list);\n\n        return pageResp;\n    }\n\n    /**\n     * 新增或保存doc\n     * 根据有无id属性来判断是更新还是新增\n     * @param req\n     */\n    @Override\n    public void save(DocSaveReq req) {\n        Doc doc = CopyUtil.copy(req, Doc.class);\n        Content content = CopyUtil.copy(req, Content.class);\n        //因为doc.id=content.id所以这里还是判断doc的id就可以了\n        if (ObjectUtils.isEmpty(req.getId())) {\n            // 新增\n            doc.setId(snowFlake.nextId());\n            docMapper.insert(doc);\n\n            content.setId(doc.getId());\n            contentMapper.insert(content);\n        } else {\n            // 更新\n            docMapper.updateByPrimaryKey(doc);\n            /**\n             * Blob代表富文本字段，如果我们一张表既有大字段又有小字段则\n             * updateByPrimaryKey和updateByPrimaryKeyWithBLOBs两个方法都会生成\n             * updateByPrimaryKey是没有关于大字段的操作的\n             * updateByPrimaryKeyWithBLOBs会带上大字段\n             * 同样的还有selectByExample和selectByExampleWithBLOBs\n             */\n            int count=contentMapper.updateByPrimaryKeyWithBLOBs(content);\n            //更新，如果没有则插入。因为有些时候文档的id有，但是content的我们没有去做\n            if (count==0){\n                contentMapper.insert(content);\n            }\n        }\n    }\n\n    /**\n     * 根据id删除doc\n     * @param id\n     */\n    @Override\n    public void delete(Long id) {\n        docMapper.deleteByPrimaryKey(id);\n    }\n\n    /**\n     * 批量删除doc\n     * @param ids\n     */\n    @Override\n    public void delete(List<String> ids) {\n        DocExample docExample = new DocExample();\n        DocExample.Criteria criteria = docExample.createCriteria();\n        criteria.andIdIn(ids);\n        docMapper.deleteByExample(docExample);\n    }\n\n    @Override\n    public String findContent(Long id) {\n        Content content=contentMapper.selectByPrimaryKey(id);\n        if(ObjectUtils.isEmpty(content)){\n            return \"\";\n        }else{\n            return content.getContent();\n        }\n    }\n}</xmp></code></pre>');
 INSERT INTO `content` VALUES (3, '');
 INSERT INTO `content` VALUES (4, '');
 INSERT INTO `content` VALUES (5, '');
-INSERT INTO `content` VALUES (6, '');
+INSERT INTO `content` VALUES (6, '<p><b>Hello World</b></p>');
 INSERT INTO `content` VALUES (90709983590748160, '<p>123</p>');
 INSERT INTO `content` VALUES (90710623364714496, '<p>123</p>');
 INSERT INTO `content` VALUES (91339308467884032, '<blockquote><h2>什么是 TypeScript？</h2><p>TypeScript 是一种由微软开发的自由和开源的编程语言，它是 JavaScript 的一个超集，扩展了 JavaScript 的语法。</p></blockquote>');
@@ -105,14 +105,14 @@ CREATE TABLE `doc`  (
 -- ----------------------------
 -- Records of doc
 -- ----------------------------
-INSERT INTO `doc` VALUES (1, 2, 0, '文档1', 1, 0, 0);
-INSERT INTO `doc` VALUES (2, 2, 1, '文档1.1', 1, 0, 0);
-INSERT INTO `doc` VALUES (3, 2, 0, '文档2', 2, 0, 0);
-INSERT INTO `doc` VALUES (4, 2, 3, '文档2.1', 1, 0, 0);
-INSERT INTO `doc` VALUES (5, 2, 3, '文档2.2', 2, 0, 0);
-INSERT INTO `doc` VALUES (6, 2, 5, '文档2.2.1', 1, 0, 0);
-INSERT INTO `doc` VALUES (90709983590748160, 3, 0, 'python十大法宝', 1, NULL, NULL);
-INSERT INTO `doc` VALUES (91339308467884032, 87011925652803580, 0, 'ts的入门语法', 1, NULL, NULL);
+INSERT INTO `doc` VALUES (1, 2, 0, '文档1', 1, 7, 1);
+INSERT INTO `doc` VALUES (2, 2, 1, '文档1.2', 1, 7, 1);
+INSERT INTO `doc` VALUES (3, 2, 0, '文档2', 2, 1, 0);
+INSERT INTO `doc` VALUES (4, 2, 3, '文档2.1', 1, 1, 0);
+INSERT INTO `doc` VALUES (5, 2, 3, '文档2.2', 2, 1, 0);
+INSERT INTO `doc` VALUES (6, 2, 5, '新栏目', 1, 1, 0);
+INSERT INTO `doc` VALUES (90709983590748160, 3, 0, 'python十大法宝', 1, 0, 0);
+INSERT INTO `doc` VALUES (91339308467884032, 87011925652803580, 0, 'ts的入门语法', 1, 0, 0);
 
 -- ----------------------------
 -- Table structure for ebook
@@ -156,7 +156,7 @@ CREATE TABLE `ebook_snapshot`  (
   `vote_increase` int NOT NULL DEFAULT 0 COMMENT '点赞增长',
   PRIMARY KEY (`id`) USING BTREE,
   UNIQUE INDEX `ebook_id_date_unique`(`ebook_id`, `date`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '电子书快照表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '电子书快照表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of ebook_snapshot
@@ -178,6 +178,7 @@ CREATE TABLE `user`  (
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'test', '测试', 'e9ab782b7db2601fa78e48fa74a3c266');
+INSERT INTO `user` VALUES (1, 'cao', '曹学习', 'fb09b64e309e1c33e7cf8cfe99b07bd5');
+INSERT INTO `user` VALUES (91434386867752960, 'cao1', '曹学习1号', 'fb09b64e309e1c33e7cf8cfe99b07bd5');
 
 SET FOREIGN_KEY_CHECKS = 1;
