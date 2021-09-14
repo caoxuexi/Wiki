@@ -67,7 +67,7 @@
           </p>
           <a-form :model="doc" layout="vertical">
             <a-form-item>
-              <a-input v-model:value="doc.name" placeholder="名称"/>
+              <a-input v-model:value="doc.name" placeholder="名称" :disabled="isSomeoneOperating"/>
             </a-form-item>
             <a-form-item>
               <a-tree-select
@@ -78,11 +78,12 @@
                   placeholder="请选择父文档"
                   tree-default-expand-all
                   :replaceFields="{title: 'name', key: 'id', value: 'id'}"
+                  :disabled="isSomeoneOperating"
               >
               </a-tree-select>
             </a-form-item>
             <a-form-item>
-              <a-input v-model:value="doc.sort" placeholder="顺序"/>
+              <a-input v-model:value="doc.sort" placeholder="顺序" :disabled="isSomeoneOperating"/>
             </a-form-item>
             <a-form-item>
               <a-button type="primary" @click="handlePreviewContent()">
@@ -164,6 +165,24 @@ export default {
      * 对话框选择确定的逻辑，即保存数据
      */
     handleSave() {
+      axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
+        const data = response.data; // data = commonResp
+        if (data.success) {
+          message.success("文档上锁成功！");
+          //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
+          // 所以我们更希望是一个深拷贝
+          this.isSomeoneOperating=false;
+          // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
+          this.treeSelectData = Tool.copy(this.levels);
+          this.setDisable(this.treeSelectData, record.id);
+          this.editingDocName=this.doc.name
+          // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
+          this.treeSelectData.unshift({id: 0, name: '无'});
+        } else {
+          this.isSomeoneOperating=true
+          message.error(data.message);
+        }
+      });
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         const data = response.data; // data = commonResp
@@ -226,17 +245,33 @@ export default {
      * 点击编辑按钮触发的方法
      */
     edit(record) {
-      //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
-      // 所以我们更希望是一个深拷贝
+      if(this.currentDocId!=-1){
+        //切换编辑文档时，尝试对之前操作的文档进行解锁
+        axios.get("/doc/checkoutDocs/"+this.currentDocId);
+      }
       this.doc = Tool.copy(record);
-      this.handleQueryContent()
+      this.currentDocId=this.doc.id
+      this.handleQueryContent();
+      //文档上锁
+      axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
+        const data = response.data; // data = commonResp
+        if (data.success) {
+          message.success("文档上锁成功！");
+          //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
+          // 所以我们更希望是一个深拷贝
+          this.isSomeoneOperating=false;
+          // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
+          this.treeSelectData = Tool.copy(this.levels);
+          this.setDisable(this.treeSelectData, record.id);
+          this.editingDocName=this.doc.name
+          // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
+          this.treeSelectData.unshift({id: 0, name: '无'});
+        } else {
+          this.isSomeoneOperating=true
+          message.error(data.message);
+        }
+      });
 
-      // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
-      this.treeSelectData = Tool.copy(this.levels);
-      this.setDisable(this.treeSelectData, record.id);
-      this.editingDocName=this.doc.name
-      // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
-      this.treeSelectData.unshift({id: 0, name: '无'});
     },
     /**
      * 将某节点及其子孙节点全部置为disabled（为文档选择父文档时）
@@ -339,6 +374,12 @@ export default {
     this.editor.create();
 
   },
+  unmounted() {
+    //切出页面的时候，对文档进行解锁
+    if(this.currentDocId!=-1){
+      axios.get("/doc/checkoutDocs/"+this.currentDocId);
+    }
+  },
   data() {
     return {
       columns: columns,
@@ -367,7 +408,9 @@ export default {
       //是否已经有人在操作文档了
       isSomeoneOperating: false,
       //正在操作的文档名
-      editingDocName:""
+      editingDocName:"",
+      //记录当前上锁的文档
+      currentDocId:-1,
     }
   }
 }

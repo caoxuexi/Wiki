@@ -80,9 +80,9 @@ public class DocController {
     }
 
     @GetMapping("/checkinDocs/{id}")
-    public CommonResp checkinDocs(@PathVariable Integer docsId){
+    public CommonResp checkinDocs(@PathVariable Integer id){
         CommonResp commonResp = new CommonResp();
-        lockCheckin(docsId);
+        lockCheckin(id);
         return commonResp;
     }
 
@@ -98,14 +98,14 @@ public class DocController {
             redisOperator.set(docsId.toString(),username,1000*60*15);
         }else{
             //如果操作的不是同一个人，则提示当前的文档操作人，并禁止操作
-            throw new BusinessException("当前"+userLock+"正在操作文档");
+            throw new BusinessException("当前文档正被用户"+userLock+"编辑");
         }
     }
 
     @GetMapping("/checkoutDocs/{id}")
-    public CommonResp checkoutDocs(@PathVariable Integer docsId){
+    public CommonResp checkoutDocs(@PathVariable Integer id){
         CommonResp commonResp = new CommonResp();
-        lockCheckout(docsId);
+        lockCheckout(id);
         return commonResp;
     }
 
@@ -115,10 +115,11 @@ public class DocController {
         if(username.equals(userLock)){
             //如果上锁的用户和现在释放锁的用户是同一个人那就释放锁
             redisOperator.del(docsId.toString());
-        }else if(StringUtils.isBlank(userLock)){
-            throw new BusinessException(BusinessExceptionCodeEnum.NOBODY_OPERATING);
-        }else{
-            throw new BusinessException(BusinessExceptionCodeEnum.HAS_PEOPLE_OPERATING);
         }
+//        else if(StringUtils.isBlank(userLock)){
+//            throw new BusinessException(BusinessExceptionCodeEnum.NOBODY_OPERATING);
+//        }else{
+//            throw new BusinessException(BusinessExceptionCodeEnum.HAS_PEOPLE_OPERATING);
+//        }
     }
 }

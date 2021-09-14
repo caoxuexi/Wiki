@@ -13,7 +13,10 @@ public enum BusinessExceptionCodeEnum {
     //用户还未登录
     NOBODY_OPERATING("当前没有用户在操作文档"),
     //当前文档已有用户在操作
-    HAS_PEOPLE_OPERATING("当前文档仍有其他用户在操作");
+    HAS_PEOPLE_OPERATING("当前文档有其他用户在操作"),
+    //自定义消息的异常
+    CUSTOM_MESSAGE(""),;
+
 
 
     private String desc;

@@ -18,7 +18,9 @@ public class BusinessException extends RuntimeException{
      * @param message
      */
     public BusinessException (String message) {
-        super(message);
+        BusinessExceptionCodeEnum exceptionCodeEnum=BusinessExceptionCodeEnum.CUSTOM_MESSAGE;
+        exceptionCodeEnum.setDesc(message);
+        this.code=BusinessExceptionCodeEnum.CUSTOM_MESSAGE;
     }
 
     public BusinessExceptionCodeEnum getCode() {
