@@ -43,10 +43,21 @@
         <template #renderItem="{ item }">  <!--它会将data-source项拿出来命名为item-->
           <a-list-item key="item.name">
             <template #actions>
-          <span v-for="{ type, text } in actions" :key="type">
-            <component v-bind:is="type" style="margin-right: 8px"/>
-            {{ text }}
-          </span>
+              <span>
+                <component v-bind:is="'FileOutlined'"
+                           style="margin-right: 8px"/>
+                {{ item.docCount }}
+              </span>
+              <span>
+                <component v-bind:is="'UserOutlined'"
+                           style="margin-right: 8px"/>
+                {{ item.viewCount }}
+              </span>
+              <span>
+                <component v-bind:is="'LikeOutlined'"
+                           style="margin-right: 8px"/>
+                {{ item.voteCount }}
+              </span>
             </template>
             <a-list-item-meta :description="item.description">
               <template #title>

@@ -13,20 +13,22 @@ import java.util.List;
  * @date 2021/8/24 18:51
  */
 public interface DocService {
-    public List<DocQueryResp> all(Long ebookId);
+    List<DocQueryResp> all(Long ebookId);
 
-    public void save(DocSaveReq req);
+    void save(DocSaveReq req);
 
-    public void delete(Long id);
+    void delete(Long id);
 
-    public void delete(List<String> ids);
+    void delete(List<String> ids);
 
     @Deprecated
-    public PageResp<DocQueryResp> list(DocQueryReq req);
+    PageResp<DocQueryResp> list(DocQueryReq req);
 
-    public String findContent(Long id);
+    String findContent(Long id);
 
     String findContentWithViewIncr(Long id);
 
     void vote(Long id);
+
+    void updateEbookInfo();
 }
