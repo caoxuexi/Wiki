@@ -168,16 +168,9 @@ export default {
       axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
         const data = response.data; // data = commonResp
         if (data.success) {
-          message.success("文档上锁成功！");
-          //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
-          // 所以我们更希望是一个深拷贝
+          // message.success("文档上锁成功！");
           this.isSomeoneOperating=false;
-          // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
-          this.treeSelectData = Tool.copy(this.levels);
-          this.setDisable(this.treeSelectData, record.id);
           this.editingDocName=this.doc.name
-          // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
-          this.treeSelectData.unshift({id: 0, name: '无'});
         } else {
           this.isSomeoneOperating=true
           message.error(data.message);
@@ -256,7 +249,7 @@ export default {
       axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
         const data = response.data; // data = commonResp
         if (data.success) {
-          message.success("文档上锁成功！");
+          // message.success("文档上锁成功！");
           //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
           // 所以我们更希望是一个深拷贝
           this.isSomeoneOperating=false;
@@ -267,7 +260,10 @@ export default {
           // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
           this.treeSelectData.unshift({id: 0, name: '无'});
         } else {
+          //文档已经被其他人操作了的时候
           this.isSomeoneOperating=true
+          //设置当前编辑的文档名为空
+          this.editingDocName="";
           message.error(data.message);
         }
       });
