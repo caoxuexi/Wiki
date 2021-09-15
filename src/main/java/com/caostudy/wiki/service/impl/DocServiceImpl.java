@@ -13,17 +13,22 @@ import com.caostudy.wiki.req.DocSaveReq;
 import com.caostudy.wiki.resp.DocQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 import com.caostudy.wiki.service.DocService;
+import com.caostudy.wiki.service.WsService;
 import com.caostudy.wiki.utils.CopyUtil;
 import com.caostudy.wiki.utils.RedisUtil;
 import com.caostudy.wiki.utils.RequestContext;
 import com.caostudy.wiki.utils.SnowFlake;
+import com.caostudy.wiki.websocket.WebSocketServer;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.mysql.cj.protocol.x.XProtocolRowInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -49,8 +54,12 @@ public class DocServiceImpl implements DocService {
     //雪花算法
     @Autowired
     private SnowFlake snowFlake;
+
     @Autowired
     private RedisUtil redisUtil;
+
+    @Autowired
+    private WsService wsService;
 
     /**
      * 查询指定ebook的文档
@@ -105,6 +114,7 @@ public class DocServiceImpl implements DocService {
      * @param req
      */
     @Override
+    @Transactional
     public void save(DocSaveReq req) {
         Doc doc = CopyUtil.copy(req, Doc.class);
         Content content = CopyUtil.copy(req, Content.class);
@@ -200,6 +210,10 @@ public class DocServiceImpl implements DocService {
         } else {
             throw new BusinessException(BusinessExceptionCodeEnum.VOTE_REPEAT);
         }
+        //推送消息
+        Doc docDb = docMapper.selectByPrimaryKey(id);
+        String logId = MDC.get("LOG_ID");
+        wsService.sendInfo("【"+docDb.getName()+"】被点赞！",logId);
     }
 
     @Override
