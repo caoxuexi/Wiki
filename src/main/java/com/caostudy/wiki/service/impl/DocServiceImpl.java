@@ -3,17 +3,21 @@ package com.caostudy.wiki.service.impl;
 import com.caostudy.wiki.domain.Content;
 import com.caostudy.wiki.domain.Doc;
 import com.caostudy.wiki.domain.DocExample;
+import com.caostudy.wiki.domain.Ebook;
 import com.caostudy.wiki.exception.BusinessException;
 import com.caostudy.wiki.exception.BusinessExceptionCodeEnum;
 import com.caostudy.wiki.mapper.ContentMapper;
 import com.caostudy.wiki.mapper.DocMapper;
 import com.caostudy.wiki.mapper.DocMapperCustom;
+import com.caostudy.wiki.mapper.EbookMapper;
 import com.caostudy.wiki.req.DocQueryReq;
 import com.caostudy.wiki.req.DocSaveReq;
 import com.caostudy.wiki.resp.DocQueryResp;
 import com.caostudy.wiki.resp.PageResp;
 import com.caostudy.wiki.service.DocService;
+import com.caostudy.wiki.service.WsService;
 import com.caostudy.wiki.utils.*;
+import com.caostudy.wiki.websocket.WebSocketServer;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.slf4j.Logger;
@@ -21,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.util.List;
@@ -42,6 +47,12 @@ public class DocServiceImpl implements DocService {
 
     @Autowired
     private DocMapperCustom docMapperCustom;
+
+    @Autowired
+    private EbookMapper ebookMapper;
+
+    @Autowired
+    private WsService wsService;
 
     //雪花算法
     @Autowired
@@ -102,6 +113,7 @@ public class DocServiceImpl implements DocService {
      * @param req
      */
     @Override
+    @Transactional
     public void save(DocSaveReq req) {
         Doc doc = CopyUtil.copy(req, Doc.class);
         Content content = CopyUtil.copy(req, Content.class);
@@ -131,6 +143,9 @@ public class DocServiceImpl implements DocService {
                 contentMapper.insert(content);
             }
         }
+        //查询出文档所属的ebook
+        Ebook ebook = ebookMapper.selectByPrimaryKey(req.getEbookId());
+        wsService.sendInfo("【"+ebook.getName()+"】"+"的"+req.getName()+"被修改保存，可刷新查看！");
     }
 
     /**

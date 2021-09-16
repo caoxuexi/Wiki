@@ -1,7 +1,6 @@
 package com.caostudy.wiki.controller;
 
 import com.caostudy.wiki.exception.BusinessException;
-import com.caostudy.wiki.exception.BusinessExceptionCodeEnum;
 import com.caostudy.wiki.req.DocSaveReq;
 import com.caostudy.wiki.resp.DocQueryResp;
 import com.caostudy.wiki.resp.CommonResp;
@@ -12,8 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
