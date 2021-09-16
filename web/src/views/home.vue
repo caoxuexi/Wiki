@@ -30,7 +30,7 @@
     >
       <div class="welcome" v-show="isShowWelcome">
         <!--   欢迎页面，后期用组件代替     -->
-        <span>欢迎来到电子书</span>
+        <the-welcome></the-welcome>
       </div>
       <a-list v-show="!isShowWelcome" item-layout="vertical" size="large" :grid="{gutter:20,column:3}"
               :data-source="ebooks">
@@ -79,6 +79,7 @@ import axios from 'axios'
 import {StarOutlined, LikeOutlined, MessageOutlined} from '@ant-design/icons-vue';
 import {Tool} from "@/util/tool";
 import {message} from "ant-design-vue";
+import TheWelcome  from '@/components/the-welcome';
 
 export default {
   name: 'Home',
@@ -86,6 +87,7 @@ export default {
     StarOutlined,
     LikeOutlined,
     MessageOutlined,
+    TheWelcome
   },
   methods: {
     /**

@@ -17,6 +17,10 @@ public class EbookSnapshotController {
     @Resource
     private EbookSnapshotService ebookSnapshotService;
 
+    /**
+     * 获得统计数值
+     * @return
+     */
     @GetMapping("/get-statistic")
     public CommonResp getStatistic() {
         List<StatisticResp> statisticResp = ebookSnapshotService.getStatistic();
