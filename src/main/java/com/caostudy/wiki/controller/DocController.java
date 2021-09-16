@@ -77,22 +77,22 @@ public class DocController {
     }
 
     @GetMapping("/checkinDocs/{id}")
-    public CommonResp checkinDocs(@PathVariable Integer id){
+    public CommonResp checkinDocs(@PathVariable String id){
         CommonResp commonResp = new CommonResp();
         lockCheckin(id);
         return commonResp;
     }
 
-    public void lockCheckin(Integer docsId){
+    public void lockCheckin(String docsId){
         String username= LoginUserContext.getUser().getName();
 
         String userLock = redisOperator.get(docsId.toString());
         if(StringUtils.isBlank(userLock)){
             //15分钟后自动释放锁
-            redisOperator.set(docsId.toString(),username,1000*60*15);
+            redisOperator.set(docsId,username,1000*60*15);
         }else if(userLock.equals(username)){
             //如果操作的用户是同一人，则延长锁的时间
-            redisOperator.set(docsId.toString(),username,1000*60*15);
+            redisOperator.set(docsId,username,1000*60*15);
         }else{
             //如果操作的不是同一个人，则提示当前的文档操作人，并禁止操作
             throw new BusinessException("当前文档正被用户"+userLock+"编辑");
@@ -100,18 +100,18 @@ public class DocController {
     }
 
     @GetMapping("/checkoutDocs/{id}")
-    public CommonResp checkoutDocs(@PathVariable Integer id){
+    public CommonResp checkoutDocs(@PathVariable String id){
         CommonResp commonResp = new CommonResp();
         lockCheckout(id);
         return commonResp;
     }
 
-    public void lockCheckout(Integer docsId){
+    public void lockCheckout(String docsId){
         String username=LoginUserContext.getUser().getName();
-        String userLock = redisOperator.get(docsId.toString());
+        String userLock = redisOperator.get(docsId);
         if(username.equals(userLock)){
             //如果上锁的用户和现在释放锁的用户是同一个人那就释放锁
-            redisOperator.del(docsId.toString());
+            redisOperator.del(docsId);
         }
 //        else if(StringUtils.isBlank(userLock)){
 //            throw new BusinessException(BusinessExceptionCodeEnum.NOBODY_OPERATING);

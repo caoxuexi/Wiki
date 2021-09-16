@@ -162,20 +162,22 @@ export default {
       });
     },
     /**
-     * 对话框选择确定的逻辑，即保存数据
+     * 点击保存按钮的逻辑，即保存数据
      */
     handleSave() {
-      axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
-        const data = response.data; // data = commonResp
-        if (data.success) {
-          // message.success("文档上锁成功！");
-          this.isSomeoneOperating=false;
-          this.editingDocName=this.doc.name
-        } else {
-          this.isSomeoneOperating=true
-          message.error(data.message);
-        }
-      });
+      if(this.currentDocId>0){
+        axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
+          const data = response.data; // data = commonResp
+          if (data.success) {
+            // message.success("文档上锁成功！");
+            this.isSomeoneOperating=false;
+            this.editingDocName=this.doc.name
+          } else {
+            this.isSomeoneOperating=true
+            message.error(data.message);
+          }
+        });
+      }
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         const data = response.data; // data = commonResp
@@ -224,9 +226,13 @@ export default {
      * 新增文档
      */
     add() {
+      //设置当前文档id为非法值(这样就不会去上锁了)
+      this.currentDocId=-1
       // 清空富文本框
       this.editor.txt.html("")
-      this.doc={}
+      this.doc={
+        ebookId:this.route.query.ebookId
+      }
 
       //全部都能选
       this.treeSelectData = Tool.copy(this.levels) || [];
