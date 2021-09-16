@@ -30,7 +30,7 @@
     >
       <div class="welcome" v-show="isShowWelcome">
         <!--   欢迎页面，后期用组件代替     -->
-        <span>欢迎来到电子书</span>
+        <span>欢迎来到文档协同开发</span>
       </div>
       <a-list v-show="!isShowWelcome" item-layout="vertical" size="large" :grid="{gutter:20,column:3}"
               :data-source="ebooks">
