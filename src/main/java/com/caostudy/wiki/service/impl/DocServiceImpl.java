@@ -145,7 +145,8 @@ public class DocServiceImpl implements DocService {
         }
         //查询出文档所属的ebook
         Ebook ebook = ebookMapper.selectByPrimaryKey(req.getEbookId());
-        wsService.sendInfo("【"+ebook.getName()+"】"+"的"+req.getName()+"被修改保存，可刷新查看！");
+        String logId = MDC.get("LOG_ID");
+        wsService.sendInfo("【"+ebook.getName()+"】"+"的"+req.getName()+"被修改保存，可刷新查看！",logId);
     }
 
     /**

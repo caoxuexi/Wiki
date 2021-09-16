@@ -3,8 +3,10 @@ package com.caostudy.wiki.Interceptor;
 import com.alibaba.fastjson.JSON;
 import com.caostudy.wiki.resp.UserLoginResp;
 import com.caostudy.wiki.utils.LoginUserContext;
+import com.caostudy.wiki.utils.SnowFlake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
@@ -27,9 +29,13 @@ public class LoginInterceptor implements HandlerInterceptor {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private SnowFlake snowFlake;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         // 打印请求信息
+        MDC.put("LOG_ID",String.valueOf(snowFlake.nextId()));
         LOG.info("------------- LoginInterceptor 开始 -------------");
         long startTime = System.currentTimeMillis();
         request.setAttribute("requestStartTime", startTime);
