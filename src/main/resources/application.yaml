@@ -8,7 +8,7 @@ spring:
     url: jdbc:mysql://localhost:3306/wiki?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
-    host: 192.168.20.129
+    host: 127.0.0.1
     port: 6379
     database: 1
     password: redis
