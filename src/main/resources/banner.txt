@@ -1,5 +1,5 @@
 ${AnsiColor.BLUE}
-#  #  #  #  #  #  #  #   ${AnsiColor.BRIGHT_CYAN}Supported by 曹学习${AnsiColor.BLUE}   #  #  #  #  #  #  #  #
+#  #  #  #  #  #  #  #   ${AnsiColor.BRIGHT_CYAN}Supported by XDU${AnsiColor.BLUE}   #  #  #  #  #  #  #  #
 #     ██     ██ ██            ███████   ██     ██     ████     ██  #
 #    ░░██   ██ ░██           ░██░░░░██ ░██    ████   ░██░██   ░██  #
 #     ░░██ ██  ░██           ░██    ░██░██   ██░░██  ░██░░██  ░██  #
