@@ -147,6 +147,15 @@ export default {
         }
       });
     },
+    get30DayStatistic() {
+      axios.get('/ebook-snapshot/get-30-statistic').then((response) => {
+        const data = response.data;
+        if (data.success) {
+          const statisticList = data.content;
+          this.init30DayEcharts(statisticList)
+        }
+      });
+    },
     init30DayEcharts(list) {
       // 发布生产后出现问题：切到别的页面，再切回首页，报表显示不出来
       // 解决方法：把原来的id=main的区域清空，重新初始化
@@ -218,15 +227,7 @@ export default {
       // 使用刚指定的配置项和数据显示图表。
       myChart.setOption(option);
     },
-    get30DayStatistic() {
-      axios.get('/ebook-snapshot/get-30-statistic').then((response) => {
-        const data = response.data;
-        if (data.success) {
-          const statisticList = data.content;
-          this.init30DayEcharts(statisticList)
-        }
-      });
-    },
+
     testEcharts() {
       // 基于准备好的dom，初始化echarts实例
       const myChart = echarts.init(document.getElementById('main'));
