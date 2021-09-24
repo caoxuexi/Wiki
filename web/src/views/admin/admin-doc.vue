@@ -53,17 +53,21 @@
           </a-table>
         </a-col>
         <a-col :span="18">
-          <p>
+          <p style="display:flex;justify-content: space-between">
             <a-form layout="inline" :model="param">
               <a-form-item>
                 <a-button type="primary" @click="handleSave()">
                   保存
                 </a-button>
-                <SyncOutlined spin style="margin-left: 20px" />
-                <span v-if="doc.id">当前正在编辑：{{editingDocName}}</span>
+                <SyncOutlined spin style="margin-left: 20px"/>
+                <span v-if="doc.id">当前正在编辑：{{ editingDocName }}</span>
                 <span v-if="!doc.id">当前正在新增文档</span>
               </a-form-item>
             </a-form>
+            <span>
+              <span style="margin-right: 10px">隔5s保存</span>
+               <a-switch v-model:checked="save5s"/>
+            </span>
           </p>
           <a-form :model="doc" layout="vertical">
             <a-form-item>
@@ -131,11 +135,27 @@ const columns = [
 //删除时需要的参数
 const deleteIds = [];
 const deleteNames = [];
-
+//定时保存
+let saveTimer = null;
 
 export default {
   name: 'AdminDoc',
   components: {},
+  watch: {
+    save5s: {
+      handler(newVal, oldVal) {
+        console.log("new:", newVal)
+        console.log("old:", oldVal)
+        if (newVal === true) {
+          saveTimer=setInterval(()=>{
+            this.handleSave()
+          },5000)
+        }else if (newVal===false){
+          clearInterval(saveTimer)
+        }
+      }
+    }
+  },
   methods: {
     handleQuery() {
       this.loading = true;
@@ -161,23 +181,25 @@ export default {
         }
       });
     },
+    autoSave(){
+
+    },
     /**
      * 点击保存按钮的逻辑，即保存数据
      */
     handleSave() {
-      if(this.currentDocId>0){
-        axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
-          const data = response.data; // data = commonResp
-          if (data.success) {
-            // message.success("文档上锁成功！");
-            this.isSomeoneOperating=false;
-            this.editingDocName=this.doc.name
-          } else {
-            this.isSomeoneOperating=true
-            message.error(data.message);
-          }
-        });
-      }
+      // if(this.currentDocId>0){
+      //   axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
+      //     const data = response.data; // data = commonResp
+      //     if (data.success) {
+      //       this.isSomeoneOperating=false;
+      //       this.editingDocName=this.doc.name
+      //     } else {
+      //       this.isSomeoneOperating=true
+      //       message.error(data.message);
+      //     }
+      //   });
+      // }
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         const data = response.data; // data = commonResp
@@ -186,8 +208,7 @@ export default {
           // 重新加载列表
           this.handleQuery();
           //更新正在操作的文档名(当我们修改了文档名进行保存的时候)
-          this.editingDocName=this.doc.name
-
+          this.editingDocName = this.doc.name
         } else {
           message.error(data.message);
         }
@@ -227,11 +248,11 @@ export default {
      */
     add() {
       //设置当前文档id为非法值(这样就不会去上锁了)
-      this.currentDocId=-1
+      this.currentDocId = -1
       // 清空富文本框
       this.editor.txt.html("")
-      this.doc={
-        ebookId:this.route.query.ebookId
+      this.doc = {
+        ebookId: this.route.query.ebookId
       }
 
       //全部都能选
@@ -244,32 +265,35 @@ export default {
      * 点击编辑按钮触发的方法
      */
     edit(record) {
-      if(this.currentDocId!=-1){
+      //切换5s保存一次状态为false
+      this.save5s = false
+      //判断是否操作的是已有的文档
+      if (this.currentDocId != -1) {
         //切换编辑文档时，尝试对之前操作的文档进行解锁
-        axios.get("/doc/checkoutDocs/"+this.currentDocId);
+        axios.get("/doc/checkoutDocs/" + this.currentDocId);
       }
       this.doc = Tool.copy(record);
-      this.currentDocId=this.doc.id
+      this.currentDocId = this.doc.id
       this.handleQueryContent();
       //文档上锁
-      axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
+      axios.get("/doc/checkinDocs/" + this.currentDocId).then((response) => {
         const data = response.data; // data = commonResp
         if (data.success) {
           // message.success("文档上锁成功！");
           //如果直接把record的值赋给this.doc则会出现修改doc致record也修改的情况，
           // 所以我们更希望是一个深拷贝
-          this.isSomeoneOperating=false;
+          this.isSomeoneOperating = false;
           // 不能选择当前节点及其所有子孙节点，作为父节点，会使树断开
           this.treeSelectData = Tool.copy(this.levels);
           this.setDisable(this.treeSelectData, record.id);
-          this.editingDocName=this.doc.name
+          this.editingDocName = this.doc.name
           // 为选择树添加一个"无"（unshift是往数组的前面添加一个项）
           this.treeSelectData.unshift({id: 0, name: '无'});
         } else {
           //文档已经被其他人操作了的时候
-          this.isSomeoneOperating=true
+          this.isSomeoneOperating = true
           //设置当前编辑的文档名为空
-          this.editingDocName="";
+          this.editingDocName = "";
           message.error(data.message);
         }
       });
@@ -378,8 +402,8 @@ export default {
   },
   unmounted() {
     //切出页面的时候，对文档进行解锁
-    if(this.currentDocId!=-1){
-      axios.get("/doc/checkoutDocs/"+this.currentDocId);
+    if (this.currentDocId != -1) {
+      axios.get("/doc/checkoutDocs/" + this.currentDocId);
     }
   },
   data() {
@@ -410,9 +434,11 @@ export default {
       //是否已经有人在操作文档了
       isSomeoneOperating: false,
       //正在操作的文档名
-      editingDocName:"",
+      editingDocName: "",
       //记录当前上锁的文档
-      currentDocId:-1,
+      currentDocId: -1,
+      //是否每隔5s保存一次
+      save5s: false
     }
   }
 }

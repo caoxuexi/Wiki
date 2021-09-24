@@ -6,7 +6,7 @@
     "serve-dev": "vue-cli-service serve --mode dev --port 8088",
     "serve-prod": "vue-cli-service serve --mode prod",
     "build-dev": "vue-cli-service build --mode dev",
-    "build-prod": "vue-cli-service build --mode prod",
+    "build-prod": "vue-cli-service build --mode prod·",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
