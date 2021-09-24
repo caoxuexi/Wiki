@@ -29,4 +29,10 @@ public interface DocService {
     String findContentWithViewIncr(Long id);
 
     void vote(Long id);
+
+    /**
+     * 自动保存
+     * @param req
+     */
+    void autoSave(DocSaveReq req);
 }

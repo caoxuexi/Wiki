@@ -80,7 +80,6 @@ public class DocServiceImpl implements DocService {
 
     /**
      * 分页查询方法
-     *
      * @param req
      * @return
      */
@@ -105,6 +104,42 @@ public class DocServiceImpl implements DocService {
         pageResp.setList(list);
 
         return pageResp;
+    }
+
+    /**
+     * 自动保存(比正常保存逻辑简单一点)
+     * @param req
+     */
+    @Override
+    public void autoSave(DocSaveReq req) {
+        Doc doc = CopyUtil.copy(req, Doc.class);
+        Content content = CopyUtil.copy(req, Content.class);
+        //因为doc.id=content.id所以这里还是判断doc的id就可以了
+        if (ObjectUtils.isEmpty(req.getId())) {
+            // 新增
+            doc.setId(snowFlake.nextId());
+            doc.setViewCount(0);
+            doc.setVoteCount(0);
+            docMapper.insert(doc);
+
+            content.setId(doc.getId());
+            contentMapper.insert(content);
+        } else {
+            // 更新
+            docMapper.updateByPrimaryKey(doc);
+            /**
+             * Blob代表富文本字段，如果我们一张表既有大字段又有小字段则
+             * updateByPrimaryKey和updateByPrimaryKeyWithBLOBs两个方法都会生成
+             * updateByPrimaryKey是没有关于大字段的操作的
+             * updateByPrimaryKeyWithBLOBs会带上大字段
+             * 同样的还有selectByExample和selectByExampleWithBLOBs
+             */
+            int count=contentMapper.updateByPrimaryKeyWithBLOBs(content);
+            //更新，如果没有则插入。因为有些时候文档的id有，但是content的我们没有去做
+            if (count==0){
+                contentMapper.insert(content);
+            }
+        }
     }
 
     /**

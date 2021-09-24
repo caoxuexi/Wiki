@@ -44,6 +44,18 @@ public class DocController {
         return resp;
     }
 
+    /**
+     * 自动保存对应的后端方法
+     * @param req
+     * @return
+     */
+    @PostMapping("/autoSave")
+    public CommonResp autoSave(@Valid @RequestBody DocSaveReq req) {
+        CommonResp resp = new CommonResp<>();
+        docService.autoSave(req);
+        return resp;
+    }
+
     @DeleteMapping("/delete/{idsStr}")
     public CommonResp delete(@PathVariable String idsStr) {
         //这个ids是1,2,3这样的格式字符串

@@ -9,7 +9,7 @@
             <a-form layout="inline" :model="param">
               <a-form-item>
                 <a-button type="primary" @click="handleQuery()">
-                  查询
+                  刷新
                 </a-button>
               </a-form-item>
               <a-form-item>
@@ -64,7 +64,7 @@
                 <span v-if="!doc.id">当前正在新增文档</span>
               </a-form-item>
             </a-form>
-            <span>
+            <span v-show="currentDocId>0">
               <span style="margin-right: 10px">隔5s保存</span>
                <a-switch v-model:checked="save5s"/>
             </span>
@@ -148,7 +148,7 @@ export default {
         console.log("old:", oldVal)
         if (newVal === true) {
           saveTimer=setInterval(()=>{
-            this.handleSave()
+            this.autoSaveSimple()
           },5000)
         }else if (newVal===false){
           clearInterval(saveTimer)
@@ -157,6 +157,7 @@ export default {
     }
   },
   methods: {
+    //获取当前项目所有的文档数据（不包括文档的内容）
     handleQuery() {
       this.loading = true;
       // 如果不清空现有数据，则编辑保存重新加载数据后，再点编辑，则列表显示的还是编辑前的数据
@@ -170,7 +171,7 @@ export default {
 
           this.levels = [];
           this.levels = Tool.array2Tree(this.docs, 0);
-          // console.log("树形结构：", this.levels);
+          console.log("树形结构：", this.levels);
 
           //父文档下拉框初始化，相当于点击新增,如果levels没数据则使用[]
           this.treeSelectData = Tool.copy(this.levels) || []
@@ -181,8 +182,22 @@ export default {
         }
       });
     },
-    autoSave(){
+    autoSaveSimple(){
+      this.doc.content = this.editor.txt.html();
 
+      axios.post("/doc/autoSave", this.doc).then((response) => {
+        const data = response.data; // data = commonResp
+        if (data.success) {
+          //如果文档名称有修改的话，就去
+          if(this.doc.name!==this.editingDocName){
+            this.handleQuery();
+          }
+          //更新正在操作的文档名(当我们修改了文档名进行保存的时候)
+          this.editingDocName = this.doc.name
+        } else {
+          message.error(data.message);
+        }
+      });
     },
     /**
      * 点击保存按钮的逻辑，即保存数据
