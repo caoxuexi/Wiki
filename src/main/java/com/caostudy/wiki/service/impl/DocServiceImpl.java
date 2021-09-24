@@ -148,7 +148,7 @@ public class DocServiceImpl implements DocService {
      * @param req
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void save(DocSaveReq req) {
         Doc doc = CopyUtil.copy(req, Doc.class);
         Content content = CopyUtil.copy(req, Content.class);

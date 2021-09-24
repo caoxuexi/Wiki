@@ -65,8 +65,8 @@
               </a-form-item>
             </a-form>
             <span v-show="currentDocId>0">
-              <span style="margin-right: 10px">隔5s保存</span>
-               <a-switch v-model:checked="save5s"/>
+              <span style="margin-right: 10px">隔3s保存</span>
+               <a-switch v-model:checked="save5s" :disabled="isSomeoneOperating"/>
             </span>
           </p>
           <a-form :model="doc" layout="vertical">
@@ -137,6 +137,8 @@ const deleteIds = [];
 const deleteNames = [];
 //定时保存
 let saveTimer = null;
+//定时刷新文档内容
+let refreshTimer = null;
 
 export default {
   name: 'AdminDoc',
@@ -144,13 +146,11 @@ export default {
   watch: {
     save5s: {
       handler(newVal, oldVal) {
-        console.log("new:", newVal)
-        console.log("old:", oldVal)
         if (newVal === true) {
-          saveTimer=setInterval(()=>{
+          saveTimer = setInterval(() => {
             this.autoSaveSimple()
-          },5000)
-        }else if (newVal===false){
+          }, 3000)
+        } else if (newVal === false) {
           clearInterval(saveTimer)
         }
       }
@@ -182,14 +182,17 @@ export default {
         }
       });
     },
-    autoSaveSimple(){
+    /**
+     * 自动保存的逻辑
+     */
+    autoSaveSimple() {
       this.doc.content = this.editor.txt.html();
 
       axios.post("/doc/autoSave", this.doc).then((response) => {
         const data = response.data; // data = commonResp
         if (data.success) {
           //如果文档名称有修改的话，就去
-          if(this.doc.name!==this.editingDocName){
+          if (this.doc.name !== this.editingDocName) {
             this.handleQuery();
           }
           //更新正在操作的文档名(当我们修改了文档名进行保存的时候)
@@ -203,18 +206,6 @@ export default {
      * 点击保存按钮的逻辑，即保存数据
      */
     handleSave() {
-      // if(this.currentDocId>0){
-      //   axios.get("/doc/checkinDocs/"+this.currentDocId).then((response) => {
-      //     const data = response.data; // data = commonResp
-      //     if (data.success) {
-      //       this.isSomeoneOperating=false;
-      //       this.editingDocName=this.doc.name
-      //     } else {
-      //       this.isSomeoneOperating=true
-      //       message.error(data.message);
-      //     }
-      //   });
-      // }
       this.doc.content = this.editor.txt.html();
       axios.post("/doc/save", this.doc).then((response) => {
         const data = response.data; // data = commonResp
@@ -394,10 +385,15 @@ export default {
       });
     },
     handlePreviewContent() {
-      const html = this.editor.txt.html();
-      this.previewHtml = html;
+      this.previewHtml =this.editor.txt.html()
       this.drawerVisible = true;
-
+      if(this.isSomeoneOperating===true){
+        refreshTimer = setInterval(() => {
+          this.handleQueryContent()
+          console.log("定时器："+this.editor.txt.html())
+          this.previewHtml=this.editor.txt.html()
+        }, 3000)
+      }
     },
     onDrawerClose() {
       this.drawerVisible = false;
@@ -414,9 +410,9 @@ export default {
     this.editor.config.zIndex = 0;
     this.editor.create();
 
-    let that=this
+    let that = this
     //监听刷新事件(刷新事件并不会触发unmounted)
-    window.addEventListener("beforeunload", function(e) {
+    window.addEventListener("beforeunload", function (e) {
       if (that.currentDocId != -1) {
         axios.get("/doc/checkoutDocs/" + that.currentDocId);
       }
@@ -431,7 +427,9 @@ export default {
     if (this.currentDocId != -1) {
       axios.get("/doc/checkoutDocs/" + this.currentDocId);
     }
+    //清除可能还在运行的两个定时任务
     clearInterval(saveTimer)
+    clearInterval(refreshTimer)
   },
   data() {
     return {
