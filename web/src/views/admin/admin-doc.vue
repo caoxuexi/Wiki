@@ -397,6 +397,7 @@ export default {
     },
     onDrawerClose() {
       this.drawerVisible = false;
+      clearInterval(refreshTimer)
     }
   },
   mounted() {
@@ -410,12 +411,15 @@ export default {
     this.editor.config.zIndex = 0;
     this.editor.create();
 
-    let that = this
-    //监听刷新事件(刷新事件并不会触发unmounted)
+    //监听页面刷新事件(刷新事件并不会触发unmounted)
+    let that=this
     window.addEventListener("beforeunload", function (e) {
       if (that.currentDocId != -1) {
         axios.get("/doc/checkoutDocs/" + that.currentDocId);
       }
+      //清除定时任务
+      clearInterval(saveTimer)
+      clearInterval(refreshTimer)
       // Cancel the event
       e.preventDefault();
       // Chrome requires returnValue to be set
