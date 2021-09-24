@@ -414,12 +414,24 @@ export default {
     this.editor.config.zIndex = 0;
     this.editor.create();
 
+    let that=this
+    //监听刷新事件(刷新事件并不会触发unmounted)
+    window.addEventListener("beforeunload", function(e) {
+      if (that.currentDocId != -1) {
+        axios.get("/doc/checkoutDocs/" + that.currentDocId);
+      }
+      // Cancel the event
+      e.preventDefault();
+      // Chrome requires returnValue to be set
+      e.returnValue = "done";
+    });
   },
   unmounted() {
     //切出页面的时候，对文档进行解锁
     if (this.currentDocId != -1) {
       axios.get("/doc/checkoutDocs/" + this.currentDocId);
     }
+    clearInterval(saveTimer)
   },
   data() {
     return {
